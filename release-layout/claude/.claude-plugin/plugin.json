@@ -1,0 +1,15 @@
+{
+  "name": "Y_MultipleAgentWorkflow",
+  "version": "1.0.0",
+  "description": "Configure and maintain reusable multi-agent project workflows.",
+  "author": {
+    "name": "YONAGI"
+  },
+  "license": "Proprietary",
+  "keywords": [
+    "multi-agent",
+    "workflow",
+    "routing",
+    "concurrency"
+  ]
+}

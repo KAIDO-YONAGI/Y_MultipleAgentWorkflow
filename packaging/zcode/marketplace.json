@@ -1,0 +1,27 @@
+{
+  "name": "Y_MultipleAgentWorkflow",
+  "plugins": [
+    {
+      "name": "Y_MultipleAgentWorkflow",
+      "source": {
+        "source": "url",
+        "type": "zip",
+        "url": "{{ZCODE_PACKAGE_URL}}",
+        "sha256": "{{ZCODE_PACKAGE_SHA256}}",
+        "path": "Y_MultipleAgentWorkflow"
+      },
+      "description": "Configure and maintain reusable multi-agent project workflows.",
+      "version": "1.0.0",
+      "author": {
+        "name": "YONAGI"
+      },
+      "category": "developer-tools",
+      "keywords": [
+        "multi-agent",
+        "workflow",
+        "routing",
+        "concurrency"
+      ]
+    }
+  ]
+}

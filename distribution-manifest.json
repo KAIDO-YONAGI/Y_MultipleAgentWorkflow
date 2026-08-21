@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "Y_MultipleAgentWorkflow",
+  "packageVersion": "1.0.0",
+  "skillVersion": "1.0.0",
+  "workflowTemplateVersion": "1.0.0",
+  "minimumPowerShellVersion": "7.0",
+  "repository": "https://github.com/KAIDO-YONAGI/Y_MultipleAgentWorkflow",
+  "skillName": "multiple-agent-workflow-config",
+  "clients": [
+    "Codex",
+    "Claude",
+    "ZCode"
+  ],
+  "managedWorkflowFiles": [
+    "Workflow/Scripts/WorkingAgent.ps1",
+    "Workflow/Scripts/Test-WorkingAgent.ps1",
+    "Workflow/Templates/BusinessRouter.template.md",
+    "Workflow/Templates/DeveloperLog.template.md",
+    "WorkingAgent/.gitignore"
+  ],
+  "projectOwnedPatterns": [
+    "Router.md",
+    "DeveloperLog.md",
+    "*Guide.md",
+    "*Design.md",
+    "*Proposal.md"
+  ],
+  "updatePolicy": {
+    "backgroundChecks": false,
+    "overwriteProjectOwnedFiles": false,
+    "overwriteDriftedManagedFiles": false
+  }
+}

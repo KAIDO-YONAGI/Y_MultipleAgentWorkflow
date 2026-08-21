@@ -1,0 +1,27 @@
+{
+  "name": "Y_MultipleAgentWorkflow",
+  "plugins": [
+    {
+      "name": "Y_MultipleAgentWorkflow",
+      "source": {
+        "source": "url",
+        "type": "zip",
+        "url": "https://github.com/KAIDO-YONAGI/Y_MultipleAgentWorkflow/releases/download/v1.0.0/Y_MultipleAgentWorkflow-1.0.0-zcode.zip",
+        "sha256": "a2304094761f42f157a71ce55764308eb8b9967bb05e84bd472a413cca50439f",
+        "path": "Y_MultipleAgentWorkflow"
+      },
+      "description": "Configure and maintain reusable multi-agent project workflows.",
+      "version": "1.0.0",
+      "author": {
+        "name": "YONAGI"
+      },
+      "category": "developer-tools",
+      "keywords": [
+        "multi-agent",
+        "workflow",
+        "routing",
+        "concurrency"
+      ]
+    }
+  ]
+}
