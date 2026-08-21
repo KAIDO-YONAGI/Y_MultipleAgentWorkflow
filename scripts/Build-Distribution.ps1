@@ -97,11 +97,6 @@ try {
         (Join-Path $root 'packaging\zcode\marketplace.json')
     ).Replace('{{ZCODE_PACKAGE_URL}}', $zcodeUrl).Replace('{{ZCODE_PACKAGE_SHA256}}', $zcodeHash)
     [IO.File]::WriteAllText(
-        (Join-Path $layoutRoot 'zcode\.zcode-plugin\marketplace.json'),
-        $zcodeMarketplace,
-        $script:MawUtf8NoBom
-    )
-    [IO.File]::WriteAllText(
         (Join-Path $distRoot 'zcode-marketplace.json'),
         $zcodeMarketplace,
         $script:MawUtf8NoBom

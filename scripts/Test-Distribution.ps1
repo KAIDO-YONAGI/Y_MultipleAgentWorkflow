@@ -151,7 +151,7 @@ try {
     Add-Pass 'build-distribution'
     $manifest = Read-MawJson (Join-Path $root 'distribution-manifest.json')
     $null = Read-MawJson (Join-Path $root 'dist\claude-marketplace.json')
-    $null = Read-MawJson (Join-Path $root 'dist\zcode-marketplace.json')
+    $zcodeMarketplace = Read-MawJson (Join-Path $root 'dist\zcode-marketplace.json')
     Add-Pass 'release-marketplace-metadata'
     $offline = Join-Path $root "dist\Y_MultipleAgentWorkflow-$($manifest.packageVersion)-offline.zip"
     Assert-True ([IO.File]::Exists($offline)) 'offline-package'
@@ -164,6 +164,14 @@ try {
             [IO.File]::Exists((Join-Path $extract "$pluginDirectory\plugin.json")) -and
             [IO.File]::Exists((Join-Path $extract 'skills\multiple-agent-workflow-config\SKILL.md'))
         ) "extract-$client-package"
+        if ($client -eq 'zcode') {
+            Assert-True (
+                -not [IO.File]::Exists((Join-Path $extract '.zcode-plugin\marketplace.json'))
+            ) 'zcode-package-excludes-self-referential-marketplace'
+            Assert-True (
+                [string]$zcodeMarketplace.plugins[0].source.sha256 -eq (Get-MawFileHash $package)
+            ) 'zcode-marketplace-package-hash'
+        }
     }
     $offlineExtract = Join-Path $testRoot 'extract-offline'
     Expand-Archive -LiteralPath $offline -DestinationPath $offlineExtract
