@@ -3,6 +3,8 @@
 The version-controlled distribution repository is the only generic Skill source.
 Codex, Claude, and ZCode adapters are generated from that source.
 
+- Client package layouts exist only in the ignored build staging directory. They are
+  not maintained or versioned as additional Skill copies.
 - `Copy` is the default release installation mode.
 - `Junction` is for a development machine that intentionally follows a local source
   checkout.

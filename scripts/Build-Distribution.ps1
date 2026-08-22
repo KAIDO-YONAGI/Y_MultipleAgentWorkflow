@@ -19,12 +19,36 @@ function Reset-OwnedDirectory {
     [void][IO.Directory]::CreateDirectory($Path)
 }
 
+function Expand-DistributionTemplate {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][hashtable]$Tokens
+    )
+
+    $text = [IO.File]::ReadAllText($Path)
+    foreach ($key in $Tokens.Keys) {
+        $text = $text.Replace("{{$key}}", [string]$Tokens[$key])
+    }
+    $text
+}
+
 function Copy-SkillLayout {
-    param([string]$SkillSource, [string]$LayoutRoot, [string]$ManifestSource, [string]$ManifestDirectory)
+    param(
+        [string]$SkillSource,
+        [string]$LayoutRoot,
+        [string]$ManifestSource,
+        [string]$ManifestDirectory,
+        [hashtable]$Tokens
+    )
+
     [void][IO.Directory]::CreateDirectory((Join-Path $LayoutRoot 'skills'))
     Copy-Item -LiteralPath $SkillSource -Destination (Join-Path $LayoutRoot 'skills\multiple-agent-workflow-config') -Recurse
     [void][IO.Directory]::CreateDirectory((Join-Path $LayoutRoot $ManifestDirectory))
-    Copy-Item -LiteralPath $ManifestSource -Destination (Join-Path $LayoutRoot "$ManifestDirectory\plugin.json")
+    [IO.File]::WriteAllText(
+        (Join-Path $LayoutRoot "$ManifestDirectory\plugin.json"),
+        (Expand-DistributionTemplate $ManifestSource $Tokens),
+        $script:MawUtf8NoBom
+    )
 }
 
 try {
@@ -33,29 +57,33 @@ try {
     $manifest = Read-MawJson $manifestPath
     $version = [string]$manifest.packageVersion
     $skillSource = Resolve-MawSkillSource $root
-    $layoutRoot = Join-Path $root 'release-layout'
     $distRoot = Join-Path $root 'dist'
     $stageRoot = Join-Path $root '.tmp\distribution'
+    $clientStageRoot = Join-Path $stageRoot 'clients'
+    $tokens = @{
+        PACKAGE_VERSION = $version
+    }
 
     if (-not $SkipClean) {
-        Reset-OwnedDirectory $root $layoutRoot
         Reset-OwnedDirectory $root $distRoot
         Reset-OwnedDirectory $root $stageRoot
     }
     else {
-        foreach ($path in @($layoutRoot, $distRoot, $stageRoot)) {
+        foreach ($path in @($distRoot, $stageRoot, $clientStageRoot)) {
             [void][IO.Directory]::CreateDirectory($path)
         }
     }
+    [void][IO.Directory]::CreateDirectory($clientStageRoot)
 
     foreach ($client in @(
         @{ Name = 'codex'; Manifest = 'packaging\codex\plugin.json'; Directory = '.codex-plugin' },
         @{ Name = 'claude'; Manifest = 'packaging\claude\plugin.json'; Directory = '.claude-plugin' },
         @{ Name = 'zcode'; Manifest = 'packaging\zcode\plugin.json'; Directory = '.zcode-plugin' }
     )) {
-        $layout = Join-Path $layoutRoot $client.Name
+        $layout = Join-Path $clientStageRoot $client.Name
         [void][IO.Directory]::CreateDirectory($layout)
-        Copy-SkillLayout $skillSource $layout (Join-Path $root $client.Manifest) $client.Directory
+        Copy-SkillLayout $skillSource $layout (Join-Path $root $client.Manifest) `
+            $client.Directory $tokens
         $zip = Join-Path $distRoot "Y_MultipleAgentWorkflow-$version-$($client.Name).zip"
         Compress-Archive -Path (Join-Path $layout '*') -DestinationPath $zip -CompressionLevel Optimal
     }
@@ -67,6 +95,7 @@ try {
     Copy-Item -LiteralPath $manifestPath -Destination $offline
     Copy-Item -LiteralPath (Join-Path $root 'VERSION') -Destination $offline
     Copy-Item -LiteralPath (Join-Path $root 'README.md') -Destination $offline
+    Copy-Item -LiteralPath (Join-Path $root 'README.cn.md') -Destination $offline
     $offlineZip = Join-Path $distRoot "Y_MultipleAgentWorkflow-$version-offline.zip"
     Compress-Archive -Path (Join-Path $offline '*') -DestinationPath $offlineZip -CompressionLevel Optimal
 
@@ -74,13 +103,13 @@ try {
         [string]$manifest.repository
     } else { $RepositoryUrl }
     if (-not [string]::IsNullOrWhiteSpace($repository)) {
-        $manifest.repository = $repository
-        Write-MawJson $manifestPath $manifest
-        $claudeMarketplace = [IO.File]::ReadAllText(
-            (Join-Path $root 'packaging\claude\marketplace.json')
-        ).Replace('{{REPOSITORY_URL}}', $repository)
+        $claudeMarketplace = Expand-DistributionTemplate `
+            (Join-Path $root 'packaging\claude\marketplace.json') @{
+                REPOSITORY_URL = $repository
+                PACKAGE_VERSION = $version
+            }
         [IO.File]::WriteAllText(
-            (Join-Path $layoutRoot 'claude\.claude-plugin\marketplace.json'),
+            (Join-Path $distRoot 'claude-marketplace.json'),
             $claudeMarketplace,
             $script:MawUtf8NoBom
         )
@@ -93,19 +122,17 @@ try {
     } else {
         "$repository/releases/download/v$version/Y_MultipleAgentWorkflow-$version-zcode.zip"
     }
-    $zcodeMarketplace = [IO.File]::ReadAllText(
-        (Join-Path $root 'packaging\zcode\marketplace.json')
-    ).Replace('{{ZCODE_PACKAGE_URL}}', $zcodeUrl).Replace('{{ZCODE_PACKAGE_SHA256}}', $zcodeHash)
+    $zcodeMarketplace = Expand-DistributionTemplate `
+        (Join-Path $root 'packaging\zcode\marketplace.json') @{
+            ZCODE_PACKAGE_URL = $zcodeUrl
+            ZCODE_PACKAGE_SHA256 = $zcodeHash
+            PACKAGE_VERSION = $version
+        }
     [IO.File]::WriteAllText(
         (Join-Path $distRoot 'zcode-marketplace.json'),
         $zcodeMarketplace,
         $script:MawUtf8NoBom
     )
-    if (-not [string]::IsNullOrWhiteSpace($repository)) {
-        Copy-Item -LiteralPath (
-            Join-Path $layoutRoot 'claude\.claude-plugin\marketplace.json'
-        ) -Destination (Join-Path $distRoot 'claude-marketplace.json')
-    }
 
     $checksumLines = @(
         Get-ChildItem -LiteralPath $distRoot -File |

@@ -21,6 +21,9 @@ $script:Utf8NoBom = [Text.UTF8Encoding]::new($false)
 $script:AssetRoot = [IO.Path]::GetFullPath(
     (Join-Path $PSScriptRoot '..\assets\workflow-template')
 )
+$script:ConfigurationMethod = [IO.Path]::GetFullPath(
+    (Join-Path $PSScriptRoot '..\references\configuration-method.md')
+)
 $script:Created = [Collections.Generic.List[string]]::new()
 $script:Planned = [Collections.Generic.List[string]]::new()
 $script:Skipped = [Collections.Generic.List[string]]::new()
@@ -272,8 +275,11 @@ procedure is configured. This workflow does not impose one.
 
     Install-Asset 'Router.md' (Join-Path $workflowRoot 'Router.md') $tokens
     Install-Asset 'DeveloperLog.md' (Join-Path $workflowRoot 'DeveloperLog.md') $tokens
-    Install-Asset 'Workflow_Configuration_Guide.md' `
-        (Join-Path $workflowRoot 'Workflow_Configuration_Guide.md') $tokens
+    if (-not [IO.File]::Exists($script:ConfigurationMethod)) {
+        throw "Missing configuration method '$script:ConfigurationMethod'."
+    }
+    Install-Text (Join-Path $workflowRoot 'Workflow_Configuration_Guide.md') `
+        (Convert-Template $script:ConfigurationMethod $tokens)
     Install-Asset 'WorkingAgent\README.md' `
         (Join-Path $workflowRoot 'WorkingAgent\README.md') $tokens
     Install-Asset 'WorkingAgent\.gitignore' `

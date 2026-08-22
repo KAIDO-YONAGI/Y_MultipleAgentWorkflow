@@ -8,6 +8,10 @@ The Skill, workflow assets, installation scripts, tests, and client manifests ar
 versioned here. Codex, Claude, and ZCode packages are generated from the same Skill
 tree.
 
+`src/skills/multiple-agent-workflow-config/` is the only maintained Skill tree.
+Client layouts are staged under `.tmp/` only while packaging; `dist/` contains the
+rebuildable release assets. Neither directory is versioned.
+
 ## Project layer
 
 Initialization copies a workflow instance into the target project. The project owns
@@ -41,3 +45,7 @@ previous installation:
 
 Each release contains Codex, Claude, ZCode, and offline ZIP packages plus
 `SHA256SUMS`. Private GitHub downloads require an authenticated `gh` command.
+
+The Claude Marketplace entry uses the tagged canonical Skill source directly.
+ZCode uses the versioned ZIP URL and its SHA-256. The offline package contains the
+install/update scripts and both README files.

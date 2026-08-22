@@ -2,7 +2,7 @@
   "name": "Y_MultipleAgentWorkflow",
   "plugins": [
     {
-      "name": "Y_MultipleAgentWorkflow",
+      "name": "y-multiple-agent-workflow",
       "source": {
         "source": "url",
         "type": "zip",
@@ -11,7 +11,7 @@
         "path": "Y_MultipleAgentWorkflow"
       },
       "description": "Configure and maintain reusable multi-agent project workflows.",
-      "version": "1.0.0",
+      "version": "{{PACKAGE_VERSION}}",
       "author": {
         "name": "YONAGI"
       },

@@ -13,6 +13,8 @@ method; each project's Router and Guide/Design files own project-specific behavi
 1. Inspect the project root, documentation indexes, model entry files, build/run
    commands, ignored evidence stores, and existing Skill/Junction layout.
 2. Read [references/configuration-method.md](references/configuration-method.md).
+   This is the canonical generic method and the source copied into a project's
+   `Workflow_Configuration_Guide.md` during initialization.
 3. Propose:
    - stable top-level knowledge domains;
    - repeated task-stage subcategories;

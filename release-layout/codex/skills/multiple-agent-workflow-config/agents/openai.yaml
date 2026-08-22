@@ -1,6 +1,0 @@
-interface:
-  display_name: "Multiple Agent Workflow Config"
-  short_description: "Configure and validate reusable multi-agent project workflows"
-  default_prompt: "Use $multiple-agent-workflow-config to analyze this project and propose a reusable multi-agent workflow configuration."
-policy:
-  allow_implicit_invocation: true

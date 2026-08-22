@@ -1,6 +1,6 @@
 {
-  "name": "Y_MultipleAgentWorkflow",
-  "version": "1.0.0",
+  "name": "y-multiple-agent-workflow",
+  "version": "{{PACKAGE_VERSION}}",
   "description": "Configure and maintain reusable multi-agent project workflows.",
   "author": {
     "name": "YONAGI"

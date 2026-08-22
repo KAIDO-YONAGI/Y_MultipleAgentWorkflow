@@ -3,6 +3,8 @@
 Versioned distribution source for the reusable multi-agent workflow configuration
 Skill and its project workflow template.
 
+Chinese primary manual: [`README.cn.md`](README.cn.md)
+
 ## Authority boundary
 
 - `src/skills/multiple-agent-workflow-config/` is the single generic Skill source.
@@ -52,3 +54,6 @@ Release assets are written to `dist/` together with `SHA256SUMS`.
 The release also includes standalone private Marketplace metadata for Claude and
 ZCode. Access to packages and explicit updates requires authorization to the private
 GitHub repository.
+
+Client layouts are staged only under `.tmp/` during a build. They are generated
+artifacts and are not tracked as duplicate Skill sources.

@@ -7,15 +7,19 @@
   },
   "plugins": [
     {
-      "name": "Y_MultipleAgentWorkflow",
+      "name": "y-multiple-agent-workflow",
       "description": "Configure and maintain reusable multi-agent project workflows.",
-      "version": "1.0.0",
+      "version": "{{PACKAGE_VERSION}}",
       "source": {
         "source": "git-subdir",
         "url": "{{REPOSITORY_URL}}",
-        "path": "release-layout/claude",
-        "ref": "v1.0.0"
+        "path": "src/skills/multiple-agent-workflow-config",
+        "ref": "v{{PACKAGE_VERSION}}"
       },
+      "strict": false,
+      "skills": [
+        "./"
+      ],
       "author": {
         "name": "YONAGI"
       },

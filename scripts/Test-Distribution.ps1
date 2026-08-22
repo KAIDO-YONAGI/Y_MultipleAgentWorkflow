@@ -22,6 +22,38 @@ function Assert-True {
     Add-Pass $Name
 }
 
+function Assert-DirectoryContentEqual {
+    param(
+        [Parameter(Mandatory)][string]$Expected,
+        [Parameter(Mandatory)][string]$Actual,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    $expectedRoot = [IO.Path]::GetFullPath($Expected).TrimEnd('\')
+    $actualRoot = [IO.Path]::GetFullPath($Actual).TrimEnd('\')
+    $expectedFiles = @(
+        Get-ChildItem -LiteralPath $expectedRoot -Recurse -File |
+            ForEach-Object { $_.FullName.Substring($expectedRoot.Length + 1).Replace('\', '/') } |
+            Sort-Object
+    )
+    $actualFiles = @(
+        Get-ChildItem -LiteralPath $actualRoot -Recurse -File |
+            ForEach-Object { $_.FullName.Substring($actualRoot.Length + 1).Replace('\', '/') } |
+            Sort-Object
+    )
+    if (($expectedFiles -join "`n") -ne ($actualFiles -join "`n")) {
+        throw "Assertion failed: $Name file lists differ."
+    }
+    foreach ($relative in $expectedFiles) {
+        $expectedHash = Get-MawFileHash (Join-Path $expectedRoot ($relative -replace '/', '\'))
+        $actualHash = Get-MawFileHash (Join-Path $actualRoot ($relative -replace '/', '\'))
+        if ($expectedHash -ne $actualHash) {
+            throw "Assertion failed: $Name hash differs for '$relative'."
+        }
+    }
+    Add-Pass $Name
+}
+
 function Invoke-JsonScript {
     param([string]$Path, [hashtable]$Arguments)
     $global:LASTEXITCODE = 0
@@ -149,21 +181,36 @@ try {
     & (Join-Path $root 'scripts\Build-Distribution.ps1') | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'Build-Distribution failed.' }
     Add-Pass 'build-distribution'
+    Assert-True (-not [IO.Directory]::Exists((Join-Path $root 'release-layout'))) `
+        'build-does-not-create-release-layout'
     $manifest = Read-MawJson (Join-Path $root 'distribution-manifest.json')
-    $null = Read-MawJson (Join-Path $root 'dist\claude-marketplace.json')
+    $claudeMarketplace = Read-MawJson (Join-Path $root 'dist\claude-marketplace.json')
     $zcodeMarketplace = Read-MawJson (Join-Path $root 'dist\zcode-marketplace.json')
     Add-Pass 'release-marketplace-metadata'
+    Assert-True (
+        [string]$claudeMarketplace.plugins[0].source.path -eq
+            'src/skills/multiple-agent-workflow-config' -and
+        [string]$claudeMarketplace.plugins[0].source.ref -eq
+            "v$($manifest.packageVersion)" -and
+        $claudeMarketplace.plugins[0].strict -eq $false -and
+        [string]$claudeMarketplace.plugins[0].skills[0] -eq './'
+    ) 'claude-marketplace-uses-canonical-source'
     $offline = Join-Path $root "dist\Y_MultipleAgentWorkflow-$($manifest.packageVersion)-offline.zip"
     Assert-True ([IO.File]::Exists($offline)) 'offline-package'
+    $skillSource = Resolve-MawSkillSource $root
     foreach ($client in @('codex', 'claude', 'zcode')) {
         $package = Join-Path $root "dist\Y_MultipleAgentWorkflow-$($manifest.packageVersion)-$client.zip"
         $extract = Join-Path $testRoot "extract-$client"
         Expand-Archive -LiteralPath $package -DestinationPath $extract
         $pluginDirectory = ".$client-plugin"
+        $plugin = Read-MawJson (Join-Path $extract "$pluginDirectory\plugin.json")
         Assert-True (
-            [IO.File]::Exists((Join-Path $extract "$pluginDirectory\plugin.json")) -and
-            [IO.File]::Exists((Join-Path $extract 'skills\multiple-agent-workflow-config\SKILL.md'))
+            [IO.File]::Exists((Join-Path $extract 'skills\multiple-agent-workflow-config\SKILL.md')) -and
+            [string]$plugin.version -eq [string]$manifest.packageVersion
         ) "extract-$client-package"
+        Assert-DirectoryContentEqual $skillSource `
+            (Join-Path $extract 'skills\multiple-agent-workflow-config') `
+            "package-$client-matches-canonical-skill"
         if ($client -eq 'zcode') {
             Assert-True (
                 -not [IO.File]::Exists((Join-Path $extract '.zcode-plugin\marketplace.json'))
@@ -177,7 +224,8 @@ try {
     Expand-Archive -LiteralPath $offline -DestinationPath $offlineExtract
     Assert-True (
         [IO.File]::Exists((Join-Path $offlineExtract 'scripts\Install-MAW.ps1')) -and
-        [IO.File]::Exists((Join-Path $offlineExtract 'distribution-manifest.json'))
+        [IO.File]::Exists((Join-Path $offlineExtract 'distribution-manifest.json')) -and
+        [IO.File]::Exists((Join-Path $offlineExtract 'README.cn.md'))
     ) 'extract-offline-package'
 
     $offlineInstall = Invoke-JsonScript $install @{
