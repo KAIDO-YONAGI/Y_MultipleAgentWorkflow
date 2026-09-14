@@ -28,8 +28,12 @@ detailed work, subagents, mutation, or state-changing tools.
 1. Route through this file.
 2. Read `Workflow\Concurrency_Guide.md`.
 3. Acquire a precise lease with `Workflow\Scripts\WorkingAgent.ps1`.
-4. Read only the routed Guide/Design, Router, and necessary evidence.
-5. Release the lease on success, failure, or cancellation.
+4. If the lease status shows an overlapping task and the client supports native
+   Agent communication, such as Codex task messaging, notify that task before
+   editing.
+5. Read only the routed Guide/Design, Router, and necessary evidence.
+6. Release the lease on success, failure, or cancellation; notify waiting tasks
+   after the release when the client supports native communication.
 
 {{PROJECT_VALIDATION_SECTION}}
 
