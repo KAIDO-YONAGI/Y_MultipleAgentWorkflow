@@ -24,9 +24,9 @@ Do not count failures, cancellation, lease bookkeeping, read-only investigation,
 pure documentation maintenance. At `5/5`, review evidence and actual project state,
 update authorities or record `reviewed-no-change`, then reset.
 
-Keep each `DeveloperLog.md` to the five most recent entries, matching one
-maintenance cycle. When a sixth entry is written, delete the oldest one in the
-same edit. After a `5/5` review, trim the log to no more than five entries.
+Do not automatically truncate `DeveloperLog.md` history. Remove an entry only
+after the user explicitly confirms it is redundant or outdated; otherwise keep
+all entries in place.
 
 Use `workflow:<business-root>` only during Router/Log writes and `workflow:root` only
 during root structure changes.

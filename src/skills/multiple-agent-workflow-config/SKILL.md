@@ -77,8 +77,8 @@ $skillRoot = '<resolved-absolute-skill-directory>'
   detailed work, subagents, mutation, or state-changing tools.
 - Keep Router/Log resources short-lived and use `workflow:root` only for root
   structure changes.
-- Keep each project `DeveloperLog.md` to the five most recent entries; when a
-  sixth entry is written, delete the oldest one in the same edit.
+- Do not automatically truncate project `DeveloperLog.md` history. Remove an
+  entry only after the user explicitly confirms it is redundant or outdated.
 - Never infer another project's build/publish/run commands from the bundled example.
 - The bundled WorkingAgent implementation targets Windows with PowerShell 7.
 - Do not create duplicate Skill copies across clients. Determine one canonical Skill
