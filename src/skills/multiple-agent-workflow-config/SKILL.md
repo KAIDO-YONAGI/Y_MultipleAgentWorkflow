@@ -77,10 +77,35 @@ $skillRoot = '<resolved-absolute-skill-directory>'
   detailed work, subagents, mutation, or state-changing tools.
 - Keep Router/Log resources short-lived and use `workflow:root` only for root
   structure changes.
+- Keep each project `DeveloperLog.md` to the five most recent entries; when a
+  sixth entry is written, delete the oldest one in the same edit.
 - Never infer another project's build/publish/run commands from the bundled example.
 - The bundled WorkingAgent implementation targets Windows with PowerShell 7.
 - Do not create duplicate Skill copies across clients. Determine one canonical Skill
   directory and use directory Junctions only after checking existing links.
+
+## Codex coordination adapter
+
+When running in Codex, native task communication may be used as a coordination
+channel, but it does not replace WorkingAgent leases or the project's Router.
+
+- Treat the lease registry and actual files/runtime results as the source of truth.
+  A task message is a coordination signal, not authority to modify another task's
+  scope.
+- After `Status`, if an active or waiting lease overlaps the intended write range,
+  identify the owning task when the Codex task channel exposes it and send a concise
+  conflict notice before editing. Include the overlap, intended access mode, and
+  whether you are asking for release, scope coordination, or a response.
+- Do not message for independent ranges or `read + read` work. Do not use native
+  communication as a reason to ignore a lease conflict.
+- If the other task confirms it is finished, wait for its lease release and verify
+  the registry again. If it is still working, keep the original scope or ask the
+  user before using an override. Never silently take over a suspected-stale lease.
+- When a blocked task becomes unblocked, send a short factual update. On completion,
+  release the lease first, then notify any task that was waiting on the range.
+- Messages must state facts, scope, and verification status. Unverified diagnoses
+  must be labeled as hypotheses. If native communication is unavailable, fall back
+  to the lease protocol and report the conflict to the user.
 
 The reusable scaffold is in [assets/workflow-template](assets/workflow-template).
 Distribution, installation, and explicit update behavior are summarized in
