@@ -15,10 +15,22 @@ Chinese primary manual: [`README.cn.md`](README.cn.md)
   are configured only when initialization explicitly selects
   `ProjectValidationMode=Guide`.
 
-## Development installation
+## Layout
+
+```text
+src/skills/multiple-agent-workflow-config/   Skill source, template, references
+packaging/                                   Codex, Claude, ZCode client manifests
+tools/install/                               Install, update, uninstall
+tools/build/                                 Release packaging
+tools/test/                                  Distribution regression and Skill metadata
+tools/lib/                                   Shared PowerShell helpers
+docs/                                        Release process and asset composition
+```
+
+## Installation
 
 ```powershell
-& '.\scripts\Install-MAW.ps1' `
+& '.\tools\install\Install-MAW.ps1' `
   -Clients Codex,Claude,ZCode `
   -Mode Junction `
   -SourceRoot $PWD `
@@ -46,14 +58,10 @@ entries.
 ## Build a release
 
 ```powershell
-& '.\scripts\Test-Distribution.ps1'
-& '.\scripts\Build-Distribution.ps1'
+& '.\tools\test\Test-Distribution.ps1'
+& '.\tools\build\Build-Distribution.ps1'
 ```
 
-Release assets are written to `dist/` together with `SHA256SUMS`.
-The release also includes standalone private Marketplace metadata for Claude and
-ZCode. Access to packages and explicit updates requires authorization to the private
-GitHub repository.
-
-Client layouts are staged only under `.tmp/` during a build. They are generated
-artifacts and are not tracked as duplicate Skill sources.
+Release assets are written to `dist/` together with `SHA256SUMS`. Client layouts are
+staged only under `.tmp/` during a build and are not tracked as duplicate Skill
+sources.

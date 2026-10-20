@@ -1,5 +1,4 @@
 /dist/
 /.tmp/
-/release-layout/
 *.user.json
 *.log

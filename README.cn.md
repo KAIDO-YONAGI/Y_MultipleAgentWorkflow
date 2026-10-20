@@ -1,7 +1,5 @@
 # Y_MultipleAgentWorkflow 中文主手册
 
-版本：`1.0.1`
-
 本仓库用于分发 `multiple-agent-workflow-config` Skill。它帮助 Codex、Claude、
 ZCode 为真实项目配置同一套多 Agent 路由、项目知识文档和可选并发租约。
 
@@ -27,9 +25,12 @@ Skill 教 Agent **怎样配置项目**；项目工作流记录 **这个项目实
 Y_MultipleAgentWorkflow/
 ├─ src/                  # 唯一 Skill 源码
 ├─ packaging/            # 三个客户端的清单模板
-├─ scripts/              # 安装、升级、卸载、打包和分发测试
-├─ tests/                # Skill 元数据校验
-├─ docs/                 # 分发边界补充说明
+├─ tools/                # 仓库工具
+│  ├─ build/             # 打包
+│  ├─ test/              # 分发回归与 Skill 元数据校验
+│  ├─ install/           # 安装、升级、卸载
+│  └─ lib/               # 共用 PowerShell 函数
+├─ docs/                 # 发布流程与资产构成
 ├─ .github/workflows/    # Windows CI
 ├─ dist/                 # 本地生成的 Release 资产，不进 Git
 ├─ .tmp/                 # 测试和打包临时目录，不进 Git
@@ -49,6 +50,7 @@ src/skills/multiple-agent-workflow-config/
 ├─ agents/openai.yaml
 ├─ references/
 │  ├─ configuration-method.md
+│  ├─ doc-maintenance.md
 │  └─ distribution.md
 ├─ assets/workflow-template/
 └─ scripts/
@@ -57,7 +59,8 @@ src/skills/multiple-agent-workflow-config/
 - `SKILL.md`：触发条件、执行顺序、确认门槛和安全边界。
 - `references/configuration-method.md`：完整通用配置方法论，也是初始化项目
   `Workflow_Configuration_Guide.md` 的来源。
-- `references/distribution.md`：通用 Skill、客户端安装和项目实例之间的边界。
+- `references/doc-maintenance.md`：既有工作流的维护方法，覆盖单一来源、入口薄化、章节顺序、矛盾清理和引用验证。
+- `references/distribution.md`：安装与升级边界，发布流程见 `docs/Distribution_Guide.md`。
 - `assets/workflow-template/`：项目 Router、日志、租约指南和托管脚本模板。
 - `scripts/Initialize-Workflow.ps1`：初始化项目工作流。
 - `scripts/Test-WorkflowConfiguration.ps1`：校验项目实例。
@@ -73,24 +76,22 @@ src/skills/multiple-agent-workflow-config/
 
 打包时，版本号和下载信息由 `distribution-manifest.json` 渲染进去。
 
-### `scripts/`
+### `tools/`
 
-- `Install-MAW.ps1`：Copy 或 Junction 安装。
-- `Update-MAW.ps1`：显式下载私有 Release 或使用离线包升级。
-- `Uninstall-MAW.ps1`：只删除安装记录证明由 MAW 创建的入口。
-- `Build-Distribution.ps1`：生成三个客户端包、离线包和校验和。
-- `Test-Distribution.ps1`：执行初始化、租约、安装、升级和打包回归。
-- `Update-WorkflowInstance.ps1`：仓库级项目实例升级入口。
-- `MAW.Common.ps1`：上述脚本共用的路径、JSON、哈希和安装辅助函数。
+- `install/Install-MAW.ps1`：Copy 或 Junction 安装。
+- `install/Update-MAW.ps1`：显式下载私有 Release 或使用离线包升级。
+- `install/Uninstall-MAW.ps1`：只删除安装记录证明由 MAW 创建的入口。
+- `install/Update-WorkflowInstance.ps1`：仓库级项目实例升级入口，转发到 Skill 内实现。
+- `build/Build-Distribution.ps1`：生成三个客户端包、离线包和校验和。
+- `test/Test-Distribution.ps1`：执行初始化、租约、安装、升级和打包回归。
+- `test/validate_skill.py`：Skill 元数据校验。
+- `lib/MAW.Common.ps1`：上述脚本共用的路径、JSON、哈希和安装辅助函数。
 
-## 3. 为什么以前看起来复制了很多份
+## 3. 一份源码，多份构建产物
 
-`release-layout/` 过去保存 Codex、Claude、ZCode 三份完整发布快照。三份 Skill
-内容逐文件相同，只多出各自的插件清单。它们是构建产物，不是三个独立配置。
+三个客户端的 Skill 内容逐文件相同，只多出各自的插件清单。它们是同一份源码
+的构建产物，不是三套独立配置。
 
-从 `1.0.1` 起：
-
-- `release-layout/` 不再受 Git 跟踪，也不再作为持久目录生成。
 - 客户端布局只在 `.tmp/distribution/clients/` 临时展开。
 - 最终 ZIP、Marketplace 元数据和 `SHA256SUMS` 只输出到 `dist/`。
 - `.tmp/` 与 `dist/` 都可随时删除，再通过构建脚本重建。
@@ -135,7 +136,7 @@ WorkingAgent 租约与 Codex 原生任务消息连接起来：发现重叠租约
 仓库开发者适合使用 Junction，使三个客户端始终读取当前源码：
 
 ```powershell
-& '.\scripts\Install-MAW.ps1' `
+& '.\tools\install\Install-MAW.ps1' `
   -Clients Codex,Claude,ZCode `
   -Mode Junction `
   -SourceRoot $PWD `
@@ -169,7 +170,7 @@ Get-Item `
 5. 普通用户使用 `-Mode Copy`；只有准备直接开发 Skill 时使用 Junction。
 
 ```powershell
-& '.\scripts\Install-MAW.ps1' `
+& '.\tools\install\Install-MAW.ps1' `
   -Clients Codex,Claude,ZCode `
   -Mode Copy `
   -SourceRoot $PWD `
@@ -188,7 +189,7 @@ SHA256SUMS
 核验 SHA-256、解压，然后运行包内安装器：
 
 ```powershell
-& '.\scripts\Install-MAW.ps1' `
+& '.\tools\install\Install-MAW.ps1' `
   -Clients Codex,Claude,ZCode `
   -Mode Copy `
   -PackagePath '<offline-zip>' `
@@ -259,13 +260,13 @@ $skillRoot = '<客户端解析出的 Skill 根目录>'
 显式检查并下载私有 Release：
 
 ```powershell
-& '.\scripts\Update-MAW.ps1' -Clients Codex,Claude,ZCode
+& '.\tools\install\Update-MAW.ps1' -Clients Codex,Claude,ZCode
 ```
 
 使用本地离线包：
 
 ```powershell
-& '.\scripts\Update-MAW.ps1' `
+& '.\tools\install\Update-MAW.ps1' `
   -Clients Codex,Claude,ZCode `
   -PackagePath '<offline-zip>' `
   -ExpectedSha256 '<sha256>'
@@ -274,7 +275,7 @@ $skillRoot = '<客户端解析出的 Skill 根目录>'
 升级某个已经初始化的项目：
 
 ```powershell
-& '.\scripts\Update-WorkflowInstance.ps1' `
+& '.\tools\install\Update-WorkflowInstance.ps1' `
   -ProjectRoot '<目标项目根>'
 ```
 
@@ -288,7 +289,7 @@ Router、DeveloperLog、Guide、Design 和 Proposal 是 `projectOwned`，不会�
 覆盖。卸载客户端入口：
 
 ```powershell
-& '.\scripts\Uninstall-MAW.ps1' -Clients Codex,Claude,ZCode
+& '.\tools\install\Uninstall-MAW.ps1' -Clients Codex,Claude,ZCode
 ```
 
 卸载 Skill 不会删除任何项目工作流实例。
@@ -299,7 +300,7 @@ Router、DeveloperLog、Guide、Design 和 Proposal 是 `projectOwned`，不会�
 
 - `src/`：通用 Skill 和项目模板；
 - `packaging/`：客户端清单模板；
-- `scripts/` 与 `tests/`：分发工具和验证；
+- `tools/`：分发工具、安装器和验证；
 - `docs/`、`README.md`、`README.cn.md`：说明文档。
 
 不要编辑 `.tmp/` 或 `dist/` 中的文件，它们会在下次构建时被清理。
@@ -307,11 +308,11 @@ Router、DeveloperLog、Guide、Design 和 Proposal 是 `projectOwned`，不会�
 完整验证：
 
 ```powershell
-python .\tests\validate_skill.py `
+python .\tools\test\validate_skill.py `
   .\src\skills\multiple-agent-workflow-config
 
-& '.\scripts\Test-Distribution.ps1'
-& '.\scripts\Build-Distribution.ps1'
+& '.\tools\test\Test-Distribution.ps1'
+& '.\tools\build\Build-Distribution.ps1'
 ```
 
 发布前确认：

@@ -11,7 +11,11 @@ function Get-MawHome {
 }
 
 function Get-MawRepositoryRoot {
-    [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+    $found = Find-MawDistributionRoot $PSScriptRoot
+    if ($null -eq $found) {
+        throw "Could not locate 'distribution-manifest.json' above '$PSScriptRoot'."
+    }
+    $found
 }
 
 function Find-MawDistributionRoot {

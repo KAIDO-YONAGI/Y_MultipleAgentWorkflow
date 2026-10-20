@@ -9,7 +9,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-. (Join-Path $PSScriptRoot 'MAW.Common.ps1')
+. (Join-Path $PSScriptRoot '..\lib\MAW.Common.ps1')
 
 $temporaryRoot = $null
 $verifyRoot = $null

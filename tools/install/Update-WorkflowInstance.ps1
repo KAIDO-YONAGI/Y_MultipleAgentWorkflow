@@ -5,6 +5,6 @@ param(
     [switch]$Apply
 )
 
-$scriptPath = Join-Path $PSScriptRoot '..\src\skills\multiple-agent-workflow-config\scripts\Update-WorkflowInstance.ps1'
+$scriptPath = Join-Path $PSScriptRoot '..\..\src\skills\multiple-agent-workflow-config\scripts\Update-WorkflowInstance.ps1'
 & $scriptPath @PSBoundParameters
 exit $LASTEXITCODE

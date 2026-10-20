@@ -16,10 +16,10 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install pyyaml
-          python ./tests/validate_skill.py ./src/skills/multiple-agent-workflow-config
+          python ./tools/test/validate_skill.py ./src/skills/multiple-agent-workflow-config
       - name: Test distribution
         shell: pwsh
-        run: ./scripts/Test-Distribution.ps1
+        run: ./tools/test/Test-Distribution.ps1
       - name: Build packages
         shell: pwsh
-        run: ./scripts/Build-Distribution.ps1
+        run: ./tools/build/Build-Distribution.ps1

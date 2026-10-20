@@ -3,7 +3,7 @@ param()
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-. (Join-Path $PSScriptRoot 'MAW.Common.ps1')
+. (Join-Path $PSScriptRoot '..\lib\MAW.Common.ps1')
 
 $root = Get-MawRepositoryRoot
 $testRoot = Join-Path $root ".tmp\tests\$([Guid]::NewGuid().ToString('N'))"
@@ -141,8 +141,8 @@ try {
     }
     Assert-True ($validation.Code -eq 0 -and $validation.Json.success) 'workflow-validation-and-working-agent-12-of-12'
 
-    $install = Join-Path $root 'scripts\Install-MAW.ps1'
-    $uninstall = Join-Path $root 'scripts\Uninstall-MAW.ps1'
+    $install = Join-Path $root 'tools\install\Install-MAW.ps1'
+    $uninstall = Join-Path $root 'tools\install\Uninstall-MAW.ps1'
     $copy = Invoke-JsonScript $install @{
         Clients = @('Codex')
         Mode = 'Copy'
@@ -178,7 +178,7 @@ try {
     $removeJunctions = Invoke-JsonScript $uninstall @{ Clients = @('Claude', 'ZCode') }
     Assert-True ($removeJunctions.Code -eq 0) 'junction-uninstall'
 
-    & (Join-Path $root 'scripts\Build-Distribution.ps1') | Out-Null
+    & (Join-Path $root 'tools\build\Build-Distribution.ps1') | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'Build-Distribution failed.' }
     Add-Pass 'build-distribution'
     Assert-True (-not [IO.Directory]::Exists((Join-Path $root 'release-layout'))) `
@@ -223,7 +223,7 @@ try {
     $offlineExtract = Join-Path $testRoot 'extract-offline'
     Expand-Archive -LiteralPath $offline -DestinationPath $offlineExtract
     Assert-True (
-        [IO.File]::Exists((Join-Path $offlineExtract 'scripts\Install-MAW.ps1')) -and
+        [IO.File]::Exists((Join-Path $offlineExtract 'tools\install\Install-MAW.ps1')) -and
         [IO.File]::Exists((Join-Path $offlineExtract 'distribution-manifest.json')) -and
         [IO.File]::Exists((Join-Path $offlineExtract 'README.cn.md'))
     ) 'extract-offline-package'
@@ -235,13 +235,13 @@ try {
     }
     Assert-True ($offlineInstall.Code -eq 0 -and $offlineInstall.Json.version -eq [string]$manifest.packageVersion) 'offline-copy-install'
     $offlineHash = Get-MawFileHash $offline
-    $badUpdate = Invoke-JsonScript (Join-Path $root 'scripts\Update-MAW.ps1') @{
+    $badUpdate = Invoke-JsonScript (Join-Path $root 'tools\install\Update-MAW.ps1') @{
         Clients = @('Codex')
         PackagePath = $offline
         ExpectedSha256 = ('0' * 64)
     }
     Assert-True ($badUpdate.Code -ne 0) 'offline-update-rejects-bad-sha256'
-    $goodUpdate = Invoke-JsonScript (Join-Path $root 'scripts\Update-MAW.ps1') @{
+    $goodUpdate = Invoke-JsonScript (Join-Path $root 'tools\install\Update-MAW.ps1') @{
         Clients = @('Codex')
         PackagePath = $offline
         ExpectedSha256 = $offlineHash
@@ -254,7 +254,7 @@ try {
     [IO.File]::AppendAllText($managedPath, "`nproject drift")
     $projectRouter = Join-Path $workflowRoot 'Router.md'
     $routerHash = Get-MawFileHash $projectRouter
-    $update = Invoke-JsonScript (Join-Path $root 'scripts\Update-WorkflowInstance.ps1') @{
+    $update = Invoke-JsonScript (Join-Path $root 'tools\install\Update-WorkflowInstance.ps1') @{
         ProjectRoot = $project
         Apply = $true
     }

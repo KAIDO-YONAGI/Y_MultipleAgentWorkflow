@@ -6,7 +6,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-. (Join-Path $PSScriptRoot 'MAW.Common.ps1')
+. (Join-Path $PSScriptRoot '..\lib\MAW.Common.ps1')
 
 function Reset-OwnedDirectory {
     param([string]$RepositoryRoot, [string]$Path)
@@ -91,7 +91,7 @@ try {
     $offline = Join-Path $stageRoot 'offline'
     [void][IO.Directory]::CreateDirectory((Join-Path $offline 'skills'))
     Copy-Item -LiteralPath $skillSource -Destination (Join-Path $offline 'skills\multiple-agent-workflow-config') -Recurse
-    Copy-Item -LiteralPath (Join-Path $root 'scripts') -Destination (Join-Path $offline 'scripts') -Recurse
+    Copy-Item -LiteralPath (Join-Path $root 'tools') -Destination (Join-Path $offline 'tools') -Recurse
     Copy-Item -LiteralPath $manifestPath -Destination $offline
     Copy-Item -LiteralPath (Join-Path $root 'VERSION') -Destination $offline
     Copy-Item -LiteralPath (Join-Path $root 'README.md') -Destination $offline
