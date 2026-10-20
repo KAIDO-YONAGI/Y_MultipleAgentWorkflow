@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "name": "Y_MultipleAgentWorkflow",
-  "packageVersion": "1.0.3",
-  "skillVersion": "1.0.3",
-  "workflowTemplateVersion": "1.0.3",
+  "packageVersion": "1.0.4",
+  "skillVersion": "1.0.4",
+  "workflowTemplateVersion": "1.0.4",
   "minimumPowerShellVersion": "7.0",
   "repository": "https://github.com/KAIDO-YONAGI/Y_MultipleAgentWorkflow",
   "skillName": "multiple-agent-workflow-config",

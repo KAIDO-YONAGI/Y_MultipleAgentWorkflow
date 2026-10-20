@@ -46,7 +46,9 @@ $skillRoot = '<resolved-absolute-skill-directory>'
    to choose:
    - preserve existing rules and add a maintained Router navigation block; or
    - replace the entry with a thin Router-only entry.
-   The default is `EntryMode=None`, which changes nothing.
+   A thin entry keeps a navigation table plus three to five binding rules; remaining
+   detail lives in one maintained rules document. The default is `EntryMode=None`,
+   which changes nothing.
 8. Validate:
 
 ```powershell
@@ -59,6 +61,14 @@ $skillRoot = '<resolved-absolute-skill-directory>'
    `Workflow\Project_Validation_Guide.md` only with user-confirmed project commands.
    Record categories, resources, evidence paths, results, and maintenance counts in
    their corresponding project documents.
+
+## Maintaining an existing workflow
+
+Initialization and maintenance are separate phases. Read
+[references/doc-maintenance.md](references/doc-maintenance.md) when a workflow already
+exists and needs single-sourcing, entry thinning, section reordering, contradiction
+cleanup, or reference verification. Ask before removing any rule or document, and keep
+out-of-scope findings to one line.
 
 ## Classification constraints
 
