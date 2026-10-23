@@ -206,6 +206,8 @@ try {
         $plugin = Read-MawJson (Join-Path $extract "$pluginDirectory\plugin.json")
         Assert-True (
             [IO.File]::Exists((Join-Path $extract 'skills\multiple-agent-workflow-config\SKILL.md')) -and
+            (Get-MawFileHash (Join-Path $extract 'LICENSE')) -eq
+                (Get-MawFileHash (Join-Path $root 'LICENSE')) -and
             [string]$plugin.version -eq [string]$manifest.packageVersion
         ) "extract-$client-package"
         Assert-DirectoryContentEqual $skillSource `
@@ -225,6 +227,8 @@ try {
     Assert-True (
         [IO.File]::Exists((Join-Path $offlineExtract 'tools\install\Install-MAW.ps1')) -and
         [IO.File]::Exists((Join-Path $offlineExtract 'distribution-manifest.json')) -and
+        (Get-MawFileHash (Join-Path $offlineExtract 'LICENSE')) -eq
+            (Get-MawFileHash (Join-Path $root 'LICENSE')) -and
         [IO.File]::Exists((Join-Path $offlineExtract 'README.cn.md'))
     ) 'extract-offline-package'
 

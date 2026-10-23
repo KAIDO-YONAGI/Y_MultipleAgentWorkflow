@@ -36,6 +36,7 @@ function Copy-SkillLayout {
     param(
         [string]$SkillSource,
         [string]$LayoutRoot,
+        [string]$LicenseSource,
         [string]$ManifestSource,
         [string]$ManifestDirectory,
         [hashtable]$Tokens
@@ -43,6 +44,7 @@ function Copy-SkillLayout {
 
     [void][IO.Directory]::CreateDirectory((Join-Path $LayoutRoot 'skills'))
     Copy-Item -LiteralPath $SkillSource -Destination (Join-Path $LayoutRoot 'skills\multiple-agent-workflow-config') -Recurse
+    Copy-Item -LiteralPath $LicenseSource -Destination (Join-Path $LayoutRoot 'LICENSE')
     [void][IO.Directory]::CreateDirectory((Join-Path $LayoutRoot $ManifestDirectory))
     [IO.File]::WriteAllText(
         (Join-Path $LayoutRoot "$ManifestDirectory\plugin.json"),
@@ -82,7 +84,8 @@ try {
     )) {
         $layout = Join-Path $clientStageRoot $client.Name
         [void][IO.Directory]::CreateDirectory($layout)
-        Copy-SkillLayout $skillSource $layout (Join-Path $root $client.Manifest) `
+        Copy-SkillLayout $skillSource $layout (Join-Path $root 'LICENSE') `
+            (Join-Path $root $client.Manifest) `
             $client.Directory $tokens
         $zip = Join-Path $distRoot "Y_MultipleAgentWorkflow-$version-$($client.Name).zip"
         Compress-Archive -Path (Join-Path $layout '*') -DestinationPath $zip -CompressionLevel Optimal
@@ -94,6 +97,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $root 'tools') -Destination (Join-Path $offline 'tools') -Recurse
     Copy-Item -LiteralPath $manifestPath -Destination $offline
     Copy-Item -LiteralPath (Join-Path $root 'VERSION') -Destination $offline
+    Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination $offline
     Copy-Item -LiteralPath (Join-Path $root 'README.md') -Destination $offline
     Copy-Item -LiteralPath (Join-Path $root 'README.cn.md') -Destination $offline
     $offlineZip = Join-Path $distRoot "Y_MultipleAgentWorkflow-$version-offline.zip"

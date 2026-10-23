@@ -5,7 +5,7 @@
   "author": {
     "name": "YONAGI"
   },
-  "license": "Proprietary",
+  "license": "MIT",
   "skills": "./skills/",
   "interface": {
     "displayName": "Y Multiple Agent Workflow",

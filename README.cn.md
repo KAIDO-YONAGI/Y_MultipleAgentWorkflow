@@ -36,6 +36,7 @@ Y_MultipleAgentWorkflow/
 ├─ .tmp/                 # 测试和打包临时目录，不进 Git
 ├─ distribution-manifest.json
 ├─ VERSION
+├─ LICENSE
 ├─ README.md
 └─ README.cn.md
 ```
@@ -96,6 +97,9 @@ src/skills/multiple-agent-workflow-config/
 - 最终 ZIP、Marketplace 元数据和 `SHA256SUMS` 只输出到 `dist/`。
 - `.tmp/` 与 `dist/` 都可随时删除，再通过构建脚本重建。
 - Claude 私有 Marketplace 直接引用仓库中的唯一 Skill 源码目录。
+
+仓库当前的发布构建支持 Codex、Claude、ZCode。项目采用 MIT License 开源，
+许可条款见根目录 `LICENSE`；客户端和离线分发包均携带该许可证。
 
 项目初始化后仍会出现一份 `Workflow_Configuration_Guide.md`。这是有意的：
 目标项目需要在没有全局 Skill 或网络的情况下仍可独立理解自己的工作流。
@@ -320,6 +324,7 @@ python .\tools\test\validate_skill.py `
 - 三个客户端 ZIP 中的 Skill 与 `src` 逐文件哈希一致；
 - Claude Marketplace 指向当前标签下的唯一源码目录；
 - ZCode Marketplace 中的包 SHA-256 与 ZIP 一致；
+- 客户端 ZIP 和离线包包含根目录 `LICENSE`；
 - 离线包包含安装器、版本清单和中英文 README；
 - `SHA256SUMS` 覆盖全部发布资产；
 - Git 工作树只包含有意修改；

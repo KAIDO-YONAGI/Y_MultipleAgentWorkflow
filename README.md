@@ -25,6 +25,7 @@ tools/build/                                 Release packaging
 tools/test/                                  Distribution regression and Skill metadata
 tools/lib/                                   Shared PowerShell helpers
 docs/                                        Release process and asset composition
+LICENSE                                      MIT License
 ```
 
 ## Installation
@@ -65,3 +66,8 @@ entries.
 Release assets are written to `dist/` together with `SHA256SUMS`. Client layouts are
 staged only under `.tmp/` during a build and are not tracked as duplicate Skill
 sources.
+
+## Supported clients and license
+
+The release build currently provides Codex, Claude, and ZCode packages. The project
+is licensed under the MIT License; see the root `LICENSE` file for the terms.

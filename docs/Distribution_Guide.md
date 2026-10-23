@@ -28,14 +28,18 @@ Each release contains:
 ## Package composition
 
 - Client ZIPs contain the client plugin manifest plus one copy of
-  `skills/multiple-agent-workflow-config/`, generated from `src/`.
+  `skills/multiple-agent-workflow-config/`, generated from `src/`, and the root
+  `LICENSE`.
 - The offline ZIP contains `tools/`, `skills/`, `distribution-manifest.json`,
-  `VERSION`, `README.md`, and `README.cn.md`.
+  `VERSION`, `LICENSE`, `README.md`, and `README.cn.md`.
 
 ## Marketplace metadata
 
 The Claude Marketplace entry references the tagged canonical Skill source directly.
 The ZCode Marketplace entry uses the versioned ZIP URL and its SHA-256.
+
+The root `LICENSE` contains the project's MIT License and is included in every
+client and offline ZIP.
 
 ## Source of truth
 
