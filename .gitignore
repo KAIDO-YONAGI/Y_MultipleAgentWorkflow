@@ -2,3 +2,6 @@
 /.tmp/
 *.user.json
 *.log
+
+# 本地个人脚本，含本机代理与凭据假设，不入库
+/Push-Local.ps1
