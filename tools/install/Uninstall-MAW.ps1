@@ -49,7 +49,7 @@ try {
 
         if ($PSCmdlet.ShouldProcess($recordTarget, "Uninstall $client Skill")) {
             if ([string]$record.mode -eq 'Junction') {
-                Remove-Item -LiteralPath $recordTarget -Force
+                [IO.Directory]::Delete($recordTarget, $false)
             }
             else {
                 Remove-Item -LiteralPath $recordTarget -Recurse -Force

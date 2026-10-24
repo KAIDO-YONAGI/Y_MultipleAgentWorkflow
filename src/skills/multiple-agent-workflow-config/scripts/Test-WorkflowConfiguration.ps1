@@ -37,6 +37,20 @@ function Test-File {
     }
 }
 
+function Get-WorkflowRelativePath {
+    param([string]$Root, [string]$Path)
+
+    $rootPath = [IO.Path]::GetFullPath($Root)
+    if (-not $rootPath.EndsWith([string][IO.Path]::DirectorySeparatorChar)) {
+        $rootPath += [IO.Path]::DirectorySeparatorChar
+    }
+    $fullPath = [IO.Path]::GetFullPath($Path)
+    if (-not $fullPath.StartsWith($rootPath, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Path '$fullPath' is not below workflow root '$rootPath'."
+    }
+    return $fullPath.Substring($rootPath.Length)
+}
+
 try {
     $project = [IO.Path]::GetFullPath($ProjectRoot)
     $workflowRoot = Join-Path $project $WorkflowRootName
@@ -97,7 +111,7 @@ try {
     )
     $maxDepth = 0
     foreach ($directory in $allDirectories) {
-        $relative = [IO.Path]::GetRelativePath($workflowRoot, $directory.FullName)
+        $relative = Get-WorkflowRelativePath $workflowRoot $directory.FullName
         $depth = @($relative -split '[\\/]').Count
         if ($depth -gt $maxDepth) {
             $maxDepth = $depth
@@ -112,13 +126,13 @@ try {
 
     $businessDirectories = @(
         $allDirectories | Where-Object {
-            $relative = [IO.Path]::GetRelativePath($workflowRoot, $_.FullName)
+            $relative = Get-WorkflowRelativePath $workflowRoot $_.FullName
             $relative -ne 'WorkingAgent' -and
             $relative -notin @('Workflow\Templates', 'Workflow\Scripts')
         }
     )
     foreach ($directory in $businessDirectories) {
-        $relative = [IO.Path]::GetRelativePath($workflowRoot, $directory.FullName)
+        $relative = Get-WorkflowRelativePath $workflowRoot $directory.FullName
         Test-File (Join-Path $directory.FullName 'Router.md') "business-router:$relative"
         Test-File (Join-Path $directory.FullName 'DeveloperLog.md') "business-log:$relative"
     }
@@ -303,8 +317,8 @@ try {
     if ($RunWorkingAgentTests) {
         $testScript = Join-Path $workflowRoot 'Workflow\Scripts\Test-WorkingAgent.ps1'
         if ([IO.File]::Exists($testScript)) {
-            $pwsh = (Get-Process -Id $PID).Path
-            $output = @(& $pwsh -NoLogo -NoProfile -File $testScript 2>&1)
+            $powerShellPath = (Get-Process -Id $PID).Path
+            $output = @(& $powerShellPath -NoLogo -NoProfile -File $testScript 2>&1)
             $exitCode = $LASTEXITCODE
             $text = $output -join [Environment]::NewLine
             if ($exitCode -eq 0 -and $text -match 'PASS SUMMARY 12/12') {

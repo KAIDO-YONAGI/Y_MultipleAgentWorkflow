@@ -79,6 +79,29 @@ try {
         $null = Read-MawJson (Join-Path $root $jsonFile)
     }
     Add-Pass 'json-manifests'
+    $manifest = Read-MawJson (Join-Path $root 'distribution-manifest.json')
+    Assert-True (
+        [string]$manifest.packageVersion -eq
+            [IO.File]::ReadAllText((Join-Path $root 'VERSION')).Trim() -and
+        [string]$manifest.skillVersion -eq [string]$manifest.packageVersion -and
+        [string]$manifest.workflowTemplateVersion -eq [string]$manifest.packageVersion -and
+        @($manifest.clients | Where-Object { $_ -eq 'WorkBuddy' }).Count -eq 1
+    ) 'version-and-workbuddy-manifest'
+    Assert-True (
+        [string]$manifest.minimumPowerShellVersion -eq '5.1'
+    ) 'minimum-powershell-version'
+    $clientLicenses = @(
+        [string](Read-MawJson (Join-Path $root 'packaging\codex\plugin.json')).license
+        [string](Read-MawJson (Join-Path $root 'packaging\claude\plugin.json')).license
+        [string](Read-MawJson (Join-Path $root 'packaging\zcode\plugin.json')).license
+    )
+    Assert-True (@($clientLicenses | Where-Object { $_ -ne 'MIT' }).Count -eq 0) `
+        'client-license-metadata'
+    Assert-True (
+        [IO.File]::Exists((Join-Path $root 'THIRD_PARTY_NOTICES.md')) -and
+        [IO.File]::Exists((Join-Path $root 'requirements-dev.txt')) -and
+        [IO.File]::Exists((Join-Path $root 'docs\Open_Source_Compliance.md'))
+    ) 'open-source-compliance-files'
 
     $scripts = @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.ps1')
     foreach ($file in $scripts) {
@@ -177,10 +200,22 @@ try {
     }
     $removeJunctions = Invoke-JsonScript $uninstall @{ Clients = @('Claude', 'ZCode') }
     Assert-True ($removeJunctions.Code -eq 0) 'junction-uninstall'
+    Assert-True (
+        [IO.Directory]::Exists((Resolve-MawSkillSource $root)) -and
+        -not [IO.Directory]::Exists((Get-MawClientTarget 'Claude')) -and
+        -not [IO.Directory]::Exists((Get-MawClientTarget 'ZCode'))
+    ) 'junction-uninstall-preserves-source'
 
     & (Join-Path $root 'tools\build\Build-Distribution.ps1') | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'Build-Distribution failed.' }
     Add-Pass 'build-distribution'
+    $workbuddyTest = Invoke-JsonScript `
+        (Join-Path $root 'tools\test\Test-WorkBuddyDistribution.ps1') @{
+            RepositoryRoot = $root
+        }
+    Assert-True (
+        $workbuddyTest.Code -eq 0 -and $workbuddyTest.Json.success
+    ) 'workbuddy-package-layout-and-initialization'
     Assert-True (-not [IO.Directory]::Exists((Join-Path $root 'release-layout'))) `
         'build-does-not-create-release-layout'
     $manifest = Read-MawJson (Join-Path $root 'distribution-manifest.json')
@@ -229,7 +264,11 @@ try {
         [IO.File]::Exists((Join-Path $offlineExtract 'distribution-manifest.json')) -and
         (Get-MawFileHash (Join-Path $offlineExtract 'LICENSE')) -eq
             (Get-MawFileHash (Join-Path $root 'LICENSE')) -and
-        [IO.File]::Exists((Join-Path $offlineExtract 'README.cn.md'))
+        [IO.File]::Exists((Join-Path $offlineExtract 'README.cn.md')) -and
+        [IO.File]::Exists((Join-Path $offlineExtract 'THIRD_PARTY_NOTICES.md')) -and
+        [IO.File]::Exists((Join-Path $offlineExtract 'requirements-dev.txt')) -and
+        [IO.File]::Exists((Join-Path $offlineExtract 'docs\Open_Source_Compliance.md')) -and
+        [IO.File]::Exists((Join-Path $offlineExtract 'docs\Distribution_Guide.md'))
     ) 'extract-offline-package'
 
     $offlineInstall = Invoke-JsonScript $install @{

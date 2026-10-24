@@ -4,7 +4,7 @@
 状态：`Active`
 最后更新：`2026-10-20`
 方法适用范围：跨项目
-租约参考实现：`Windows + PowerShell 7`
+租约参考实现：`Windows + Windows PowerShell 5.1 或 PowerShell 7+`
 
 本文是一份可带入真实项目执行的通用配置方法，不是 My_SpinePet 的项目操作
 指南。它帮助 Agent 从目标项目的事实出发，设计路由、业务分类、权威文档、

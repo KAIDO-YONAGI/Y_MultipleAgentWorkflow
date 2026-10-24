@@ -15,11 +15,21 @@ jobs:
       - name: Validate Skill metadata
         shell: pwsh
         run: |
-          python -m pip install pyyaml
+          python -m pip install -r requirements-dev.txt
           python ./tools/test/validate_skill.py ./src/skills/multiple-agent-workflow-config
-      - name: Test distribution
+      - name: Test distribution (PowerShell 7)
         shell: pwsh
+        run: ./tools/test/Test-Distribution.ps1
+      - name: Test distribution (Windows PowerShell 5.1)
+        shell: powershell
         run: ./tools/test/Test-Distribution.ps1
       - name: Build packages
         shell: pwsh
         run: ./tools/build/Build-Distribution.ps1
+      - name: Validate WorkBuddy package
+        shell: pwsh
+        run: |
+          $manifest = Get-Content ./distribution-manifest.json -Raw | ConvertFrom-Json
+          python ./tools/test/validate_workbuddy.py `
+            "./dist/Y_MultipleAgentWorkflow-$($manifest.skillVersion)-workbuddy.zip" `
+            ./distribution-manifest.json

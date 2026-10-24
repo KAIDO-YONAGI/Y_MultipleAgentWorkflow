@@ -18,9 +18,12 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $script:Utf8NoBom = [Text.UTF8Encoding]::new($false)
-$script:AssetRoot = [IO.Path]::GetFullPath(
-    (Join-Path $PSScriptRoot '..\assets\workflow-template')
-)
+$script:AssetRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\assets\workflow-template'))
+if (-not [IO.Directory]::Exists($script:AssetRoot)) {
+    $script:AssetRoot = [IO.Path]::GetFullPath(
+        (Join-Path $PSScriptRoot '..\templates\workflow-template')
+    )
+}
 $script:ConfigurationMethod = [IO.Path]::GetFullPath(
     (Join-Path $PSScriptRoot '..\references\configuration-method.md')
 )

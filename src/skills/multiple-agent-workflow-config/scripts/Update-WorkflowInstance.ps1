@@ -37,6 +37,9 @@ try {
         (Join-Path $distributionRoot 'distribution-manifest.json')
     ) | ConvertFrom-Json
     $assetRoot = Join-Path $PSScriptRoot '..\assets\workflow-template'
+    if (-not [IO.Directory]::Exists($assetRoot)) {
+        $assetRoot = Join-Path $PSScriptRoot '..\templates\workflow-template'
+    }
     $instance = [IO.File]::ReadAllText($instancePath) | ConvertFrom-Json
     $results = [Collections.Generic.List[object]]::new()
 
@@ -95,7 +98,16 @@ try {
             ($instance | ConvertTo-Json -Depth 10),
             $utf8NoBom
         )
-        [IO.File]::Move($temporary, $instancePath, $true)
+        if ([IO.File]::Exists($instancePath)) {
+            $backup = "$instancePath.$([Guid]::NewGuid().ToString('N')).bak"
+            [IO.File]::Replace($temporary, $instancePath, $backup)
+            if ([IO.File]::Exists($backup)) {
+                [IO.File]::Delete($backup)
+            }
+        }
+        else {
+            [IO.File]::Move($temporary, $instancePath)
+        }
     }
 
     $drifted = @($results | Where-Object status -eq 'drifted').Count

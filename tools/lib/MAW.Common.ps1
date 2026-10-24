@@ -40,6 +40,24 @@ function Read-MawJson {
     [IO.File]::ReadAllText($Path) | ConvertFrom-Json
 }
 
+function Move-MawFileIntoPlace {
+    param(
+        [Parameter(Mandatory)][string]$Source,
+        [Parameter(Mandatory)][string]$Destination
+    )
+
+    if ([IO.File]::Exists($Destination)) {
+        $backup = "$Destination.$([Guid]::NewGuid().ToString('N')).bak"
+        [IO.File]::Replace($Source, $Destination, $backup)
+        if ([IO.File]::Exists($backup)) {
+            [IO.File]::Delete($backup)
+        }
+    }
+    else {
+        [IO.File]::Move($Source, $Destination)
+    }
+}
+
 function Write-MawJson {
     param(
         [Parameter(Mandatory)][string]$Path,
@@ -53,7 +71,7 @@ function Write-MawJson {
         ($Value | ConvertTo-Json -Depth 12),
         $script:MawUtf8NoBom
     )
-    [IO.File]::Move($temporary, $Path, $true)
+    Move-MawFileIntoPlace $temporary $Path
 }
 
 function Get-MawFileHash {

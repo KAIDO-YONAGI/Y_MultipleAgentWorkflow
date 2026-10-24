@@ -256,18 +256,31 @@ function Write-LeaseLocked {
     $Lease.heartbeatAtUtc = $persisted.heartbeatAtUtc
     $Lease.overrideApprovedAtUtc = $persisted.overrideApprovedAtUtc
 
-    $temp = "$target.$([Guid]::NewGuid().ToString('N')).tmp"
+    $transactionId = [Guid]::NewGuid().ToString('N')
+    $temp = "$target.$transactionId.tmp"
+    $backup = "$target.$transactionId.bak"
     try {
         [IO.File]::WriteAllText(
             $temp,
             ($persisted | ConvertTo-Json -Depth 8),
             $script:Utf8NoBom
         )
-        [IO.File]::Move($temp, $target, $true)
+        if ([IO.File]::Exists($target)) {
+            [IO.File]::Replace($temp, $target, $backup)
+            if ([IO.File]::Exists($backup)) {
+                [IO.File]::Delete($backup)
+            }
+        }
+        else {
+            [IO.File]::Move($temp, $target)
+        }
     }
     finally {
         if ([IO.File]::Exists($temp)) {
             [IO.File]::Delete($temp)
+        }
+        if ([IO.File]::Exists($backup)) {
+            [IO.File]::Delete($backup)
         }
     }
 }
@@ -460,10 +473,14 @@ function New-Lease {
     $now = [DateTime]::UtcNow
     $nonce = [Guid]::NewGuid().ToString('N')
     $hashInput = "$AgentName|$Model|$SessionId|$($now.ToString('o'))|$nonce"
-    $hashBytes = [Security.Cryptography.SHA256]::HashData(
-        [Text.Encoding]::UTF8.GetBytes($hashInput)
-    )
-    $hash = ([Convert]::ToHexString($hashBytes)).Substring(0, 12).ToLowerInvariant()
+    $sha256 = [Security.Cryptography.SHA256]::Create()
+    try {
+        $hashBytes = $sha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($hashInput))
+    }
+    finally {
+        $sha256.Dispose()
+    }
+    $hash = [BitConverter]::ToString($hashBytes).Replace('-', '').Substring(0, 12).ToLowerInvariant()
     $safeAgentName = [regex]::Replace($AgentName, '[^\p{L}\p{Nd}_.-]', '_')
     if ([string]::IsNullOrWhiteSpace($safeAgentName)) {
         $safeAgentName = 'Agent'

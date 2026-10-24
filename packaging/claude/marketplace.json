@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "Y_MultipleAgentWorkflow",
-  "description": "Private marketplace for the Y_MultipleAgentWorkflow Skill.",
+  "description": "Marketplace metadata for the Y_MultipleAgentWorkflow Skill.",
   "owner": {
     "name": "YONAGI"
   },

@@ -1,7 +1,7 @@
 # Y_MultipleAgentWorkflow 中文主手册
 
 本仓库用于分发 `multiple-agent-workflow-config` Skill。它帮助 Codex、Claude、
-ZCode 为真实项目配置同一套多 Agent 路由、项目知识文档和可选并发租约。
+ZCode 和 WorkBuddy 为真实项目配置同一套多 Agent 路由、项目知识文档和可选并发租约。
 
 英文摘要见 `README.md`。本文件是项目构成、使用、迁移、开发和发布的中文
 主手册。
@@ -13,7 +13,8 @@ ZCode 为真实项目配置同一套多 Agent 路由、项目知识文档和可�
 | 层 | 位置 | 作用 | 所有权 |
 |---|---|---|---|
 | 通用 Skill 源码 | `src/skills/multiple-agent-workflow-config/` | 保存跨项目方法、初始化器、校验器和工作流模板 | 本仓库唯一权威 |
-| 客户端安装入口 | Codex、Claude、ZCode 的用户级 Skill 目录 | 让各客户端发现同一个 Skill | Copy 安装或指向源码的 Junction |
+| 客户端安装入口 | Codex、Claude、ZCode 的用户级 Skill 目录 | 让本地安装器管理各客户端的 Skill | Copy 安装或指向源码的 Junction |
+| WorkBuddy 分发 | WorkBuddy Skill ZIP | 导入 WorkBuddy 的 Skill | WorkBuddy 自身的导入/市场流程 |
 | 项目工作流实例 | `<ProjectRoot>/Y_MultipleAgentWorkflow/` | 保存目标项目自己的 Router、Guide、Design、日志和租约 | 目标项目 Git |
 
 Skill 教 Agent **怎样配置项目**；项目工作流记录 **这个项目实际怎样工作**。
@@ -24,7 +25,7 @@ Skill 教 Agent **怎样配置项目**；项目工作流记录 **这个项目实
 ```text
 Y_MultipleAgentWorkflow/
 ├─ src/                  # 唯一 Skill 源码
-├─ packaging/            # 三个客户端的清单模板
+├─ packaging/            # 客户端清单模板与 WorkBuddy 适配说明
 ├─ tools/                # 仓库工具
 │  ├─ build/             # 打包
 │  ├─ test/              # 分发回归与 Skill 元数据校验
@@ -37,6 +38,8 @@ Y_MultipleAgentWorkflow/
 ├─ distribution-manifest.json
 ├─ VERSION
 ├─ LICENSE
+├─ THIRD_PARTY_NOTICES.md
+├─ requirements-dev.txt
 ├─ README.md
 └─ README.cn.md
 ```
@@ -80,26 +83,42 @@ src/skills/multiple-agent-workflow-config/
 ### `tools/`
 
 - `install/Install-MAW.ps1`：Copy 或 Junction 安装。
-- `install/Update-MAW.ps1`：显式下载私有 Release 或使用离线包升级。
+- `install/Update-MAW.ps1`：显式下载 GitHub Release 或使用离线包升级。
 - `install/Uninstall-MAW.ps1`：只删除安装记录证明由 MAW 创建的入口。
 - `install/Update-WorkflowInstance.ps1`：仓库级项目实例升级入口，转发到 Skill 内实现。
-- `build/Build-Distribution.ps1`：生成三个客户端包、离线包和校验和。
+- `build/Build-Distribution.ps1`：生成 Codex、Claude、ZCode、WorkBuddy 包、离线包和校验和。
 - `test/Test-Distribution.ps1`：执行初始化、租约、安装、升级和打包回归。
 - `test/validate_skill.py`：Skill 元数据校验。
+- `test/validate_workbuddy.py`：WorkBuddy ZIP 结构与元数据校验。
 - `lib/MAW.Common.ps1`：上述脚本共用的路径、JSON、哈希和安装辅助函数。
+- `requirements-dev.txt`：Skill 元数据校验所需的 Python 开发依赖。
+- `THIRD_PARTY_NOTICES.md`：第三方依赖与分发声明。
 
 ## 3. 一份源码，多份构建产物
 
-三个客户端的 Skill 内容逐文件相同，只多出各自的插件清单。它们是同一份源码
-的构建产物，不是三套独立配置。
+Codex、Claude、ZCode 包中的 Skill 内容逐文件相同，只多出各自的插件清单。
+WorkBuddy 包从同一源码生成，并按平台要求加入双语元数据、许可证和资源目录适配；
+它不是另一套独立配置。
 
 - 客户端布局只在 `.tmp/distribution/clients/` 临时展开。
 - 最终 ZIP、Marketplace 元数据和 `SHA256SUMS` 只输出到 `dist/`。
 - `.tmp/` 与 `dist/` 都可随时删除，再通过构建脚本重建。
-- Claude 私有 Marketplace 直接引用仓库中的唯一 Skill 源码目录。
+- Claude Marketplace 直接引用仓库中的唯一 Skill 源码目录。
 
-仓库当前的发布构建支持 Codex、Claude、ZCode。项目采用 MIT License 开源，
-许可条款见根目录 `LICENSE`；客户端和离线分发包均携带该许可证。
+发布构建生成 Codex、Claude、ZCode 客户端 ZIP、WorkBuddy Skill ZIP 和离线包。
+项目采用 MIT License 开源，许可条款见根目录 `LICENSE`；所有分发 ZIP 均携带
+该许可证。WorkBuddy 包只有一个顶层技能目录，含 `SKILL.md`、references、
+scripts、`templates/` 和 `LICENSE`，不含其他客户端专用文件。
+
+WorkBuddy 的脚本面向 Windows，运行时需要 Windows PowerShell 5.1（Windows 自带）
+或 PowerShell 7；PowerShell 7 不是额外必装项。WorkBuddy 的执行工具使用 Bash，
+因此须由 Bash 在同一 Windows 环境调用 `powershell.exe`；若其执行环境无法访问
+Windows 工作区或启动该程序，应由用户在本机运行脚本。Codex、Claude、ZCode
+本地安装器不管理 WorkBuddy，WorkBuddy ZIP 需通过其自身流程导入。
+
+运行时没有第三方模块依赖。Python 3 与 PyYAML 仅用于开发/CI 元数据校验；
+Git 用于克隆仓库，Git 与 GitHub CLI (`gh`) 分别仅在对应的显式更新路径需要。
+离线包带有开发依赖清单，但不包含 PyYAML 本体。
 
 项目初始化后仍会出现一份 `Workflow_Configuration_Guide.md`。这是有意的：
 目标项目需要在没有全局 Skill 或网络的情况下仍可独立理解自己的工作流。
@@ -167,8 +186,9 @@ Get-Item `
 
 ### 在线迁移
 
-1. 安装 Git、GitHub CLI 和 PowerShell 7。
-2. 使用有权访问私有仓库的 GitHub 账号执行 `gh auth login`。
+1. 使用 Windows PowerShell 5.1（Windows 自带）或 PowerShell 7；WorkBuddy 还要求
+   Bash 工具能在同一 Windows 主机访问工作区并启动 `powershell.exe`。
+2. 仅从源码克隆时需要 Git；GitHub CLI (`gh`) 只在显式下载 GitHub Release 更新时需要。
 3. 克隆本仓库。
 4. 在仓库根运行 `Install-MAW.ps1`。
 5. 普通用户使用 `-Mode Copy`；只有准备直接开发 Skill 时使用 Junction。
@@ -183,7 +203,7 @@ Get-Item `
 
 ### 离线迁移
 
-从私有 Release 取得：
+从 GitHub Release 取得：
 
 ```text
 Y_MultipleAgentWorkflow-<version>-offline.zip
@@ -261,7 +281,7 @@ $skillRoot = '<客户端解析出的 Skill 根目录>'
 
 ## 10. 升级与卸载
 
-显式检查并下载私有 Release：
+显式检查并下载 GitHub Release：
 
 ```powershell
 & '.\tools\install\Update-MAW.ps1' -Clients Codex,Claude,ZCode
@@ -321,14 +341,21 @@ python .\tools\test\validate_skill.py `
 
 发布前确认：
 
-- 三个客户端 ZIP 中的 Skill 与 `src` 逐文件哈希一致；
+- Codex、Claude、ZCode ZIP 中的 Skill 与 `src` 逐文件哈希一致；
+- WorkBuddy ZIP 只有预期的单一顶层目录、必需双语字段、版本、作者和 `LICENSE`；
+- WorkBuddy ZIP 的 `references/`、`scripts/`、`templates/` 与正文引用一致；
 - Claude Marketplace 指向当前标签下的唯一源码目录；
 - ZCode Marketplace 中的包 SHA-256 与 ZIP 一致；
-- 客户端 ZIP 和离线包包含根目录 `LICENSE`；
-- 离线包包含安装器、版本清单和中英文 README；
+- 所有 ZIP 包含 `LICENSE`；
+- 离线包包含安装器、版本清单、中英文 README、`docs/`、第三方声明和开发依赖清单；
+- `THIRD_PARTY_NOTICES.md` 记录依赖范围、许可证和是否随包分发；
+- 发布前检查新增依赖、模板和资源的来源及再分发条件；
 - `SHA256SUMS` 覆盖全部发布资产；
 - Git 工作树只包含有意修改；
 - 标签与 `distribution-manifest.json` 版本一致。
+- WorkBuddy 开放平台的技能规范和发布/定价规则可能变化；当前技术 ZIP 校验不等于
+  市场审核通过。免费开源仓库分发与 WorkBuddy 市场免费上架是两件事，上架前须在
+  账号实际发布流程确认可选的免费模式及平台要求。
 
 ## 12. 常见误区
 

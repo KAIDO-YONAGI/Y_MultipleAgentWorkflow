@@ -1,17 +1,21 @@
 [CmdletBinding()]
 param(
-    [string]$WorkingAgentScript = (Join-Path $PSScriptRoot 'WorkingAgent.ps1'),
+    [string]$WorkingAgentScript,
     [switch]$KeepArtifacts
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$script:PwshPath = (Get-Process -Id $PID).Path
+if ([string]::IsNullOrWhiteSpace($WorkingAgentScript)) {
+    $WorkingAgentScript = Join-Path $PSScriptRoot 'WorkingAgent.ps1'
+}
+
+$script:PowerShellPath = (Get-Process -Id $PID).Path
 $script:WorkingAgentFullPath = [IO.Path]::GetFullPath($WorkingAgentScript)
 $script:WorkspaceRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $script:TestRoot = Join-Path ([IO.Path]::GetTempPath()) (
-    'working-agent-tests-' + [Guid]::NewGuid().ToString('N')
+    'working-agent tests-' + [Guid]::NewGuid().ToString('N')
 )
 $script:PassCount = 0
 $script:TestCount = 0
@@ -35,26 +39,59 @@ function New-TestRegistry {
     $path
 }
 
+function ConvertTo-ProcessArgument {
+    param([Parameter(Mandatory)][AllowEmptyString()][string]$Value)
+
+    $builder = [Text.StringBuilder]::new()
+    [void]$builder.Append([char]34)
+    $backslashCount = 0
+    foreach ($character in $Value.ToCharArray()) {
+        if ($character -eq [char]92) {
+            $backslashCount++
+            continue
+        }
+
+        if ($character -eq [char]34) {
+            [void]$builder.Append([string]::new([char]92, ($backslashCount * 2) + 1))
+            [void]$builder.Append([char]34)
+        }
+        else {
+            if ($backslashCount -gt 0) {
+                [void]$builder.Append([string]::new([char]92, $backslashCount))
+            }
+            [void]$builder.Append($character)
+        }
+        $backslashCount = 0
+    }
+
+    if ($backslashCount -gt 0) {
+        [void]$builder.Append([string]::new([char]92, $backslashCount * 2))
+    }
+    [void]$builder.Append([char]34)
+    $builder.ToString()
+}
+
 function New-AgentProcess {
     param(
         [Parameter(Mandatory)][hashtable]$Arguments
     )
 
     $psi = [Diagnostics.ProcessStartInfo]::new()
-    $psi.FileName = $script:PwshPath
+    $psi.FileName = $script:PowerShellPath
     $psi.UseShellExecute = $false
     $psi.CreateNoWindow = $true
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
-    $psi.ArgumentList.Add('-NoLogo')
-    $psi.ArgumentList.Add('-NoProfile')
-    $psi.ArgumentList.Add('-File')
-    $psi.ArgumentList.Add($script:WorkingAgentFullPath)
+    $processArguments = [Collections.Generic.List[string]]::new()
+    $processArguments.Add('-NoLogo')
+    $processArguments.Add('-NoProfile')
+    $processArguments.Add('-File')
+    $processArguments.Add($script:WorkingAgentFullPath)
 
     foreach ($entry in $Arguments.GetEnumerator()) {
         if ($entry.Value -is [bool]) {
             if ($entry.Value) {
-                $psi.ArgumentList.Add("-$($entry.Key)")
+                $processArguments.Add("-$($entry.Key)")
             }
             continue
         }
@@ -70,9 +107,12 @@ function New-AgentProcess {
             [string]$entry.Value
         }
 
-        $psi.ArgumentList.Add("-$($entry.Key)")
-        $psi.ArgumentList.Add($value)
+        $processArguments.Add("-$($entry.Key)")
+        $processArguments.Add($value)
     }
+    $psi.Arguments = (
+        @($processArguments | ForEach-Object { ConvertTo-ProcessArgument $_ }) -join ' '
+    )
 
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $psi
@@ -428,7 +468,7 @@ finally {
             [StringComparison]::OrdinalIgnoreCase
         ) -and
             ([IO.Path]::GetFileName($resolvedTestRoot)).StartsWith(
-                'working-agent-tests-',
+                'working-agent tests-',
                 [StringComparison]::OrdinalIgnoreCase
             )
         if ($isExpectedRoot -and [IO.Directory]::Exists($resolvedTestRoot)) {

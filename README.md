@@ -19,13 +19,15 @@ Chinese primary manual: [`README.cn.md`](README.cn.md)
 
 ```text
 src/skills/multiple-agent-workflow-config/   Skill source, template, references
-packaging/                                   Codex, Claude, ZCode client manifests
+packaging/                                   Client manifests and WorkBuddy metadata
 tools/install/                               Install, update, uninstall
 tools/build/                                 Release packaging
 tools/test/                                  Distribution regression and Skill metadata
 tools/lib/                                   Shared PowerShell helpers
 docs/                                        Release process and asset composition
 LICENSE                                      MIT License
+THIRD_PARTY_NOTICES.md                       Third-party dependency notices
+requirements-dev.txt                         Python development dependencies
 ```
 
 ## Installation
@@ -69,5 +71,14 @@ sources.
 
 ## Supported clients and license
 
-The release build currently provides Codex, Claude, and ZCode packages. The project
-is licensed under the MIT License; see the root `LICENSE` file for the terms.
+The release build provides Codex, Claude, and ZCode client ZIPs, a WorkBuddy Skill
+ZIP, and an offline package. WorkBuddy imports its ZIP through its Skill workflow;
+the local installer targets Codex, Claude, and ZCode only. The WorkBuddy adapter and
+bundled scripts are Windows-only. Windows PowerShell 5.1 is sufficient; PowerShell 7
+or later is also supported.
+
+There are no third-party runtime modules. Python 3 and PyYAML are needed only for
+development metadata validation. Git is used when cloning the repository; Git and
+GitHub CLI (`gh`) are optional paths for explicit updates. The offline package
+includes the compliance guide and third-party notices; see
+[`docs/Open_Source_Compliance.md`](docs/Open_Source_Compliance.md).

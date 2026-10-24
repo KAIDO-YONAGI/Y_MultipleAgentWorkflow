@@ -53,6 +53,68 @@ function Copy-SkillLayout {
     )
 }
 
+function Build-WorkBuddyPackage {
+    param(
+        [string]$RepositoryRoot,
+        [string]$SkillSource,
+        [string]$StageRoot,
+        [string]$DistributionRoot,
+        [string]$Version
+    )
+
+    $skillName = 'multiple-agent-workflow-config'
+    $packageRoot = Join-Path $StageRoot 'workbuddy'
+    Reset-OwnedDirectory $RepositoryRoot $packageRoot
+    $skillRoot = Join-Path $packageRoot $skillName
+    [void][IO.Directory]::CreateDirectory($skillRoot)
+
+    foreach ($directory in @('references', 'scripts')) {
+        Copy-Item -LiteralPath (Join-Path $SkillSource $directory) `
+            -Destination $skillRoot -Recurse
+    }
+    $templatesRoot = Join-Path $skillRoot 'templates'
+    [void][IO.Directory]::CreateDirectory($templatesRoot)
+    Copy-Item -LiteralPath (Join-Path $SkillSource 'assets\workflow-template') `
+        -Destination (Join-Path $templatesRoot 'workflow-template') -Recurse
+    Copy-Item -LiteralPath (Join-Path $RepositoryRoot 'LICENSE') `
+        -Destination (Join-Path $skillRoot 'LICENSE')
+
+    $canonicalSkill = [IO.File]::ReadAllText((Join-Path $SkillSource 'SKILL.md'))
+    $canonicalFrontmatter = [regex]::Match(
+        $canonicalSkill,
+        '\A---\r?\n.*?\r?\n---(?:\r?\n|\Z)',
+        [Text.RegularExpressions.RegexOptions]::Singleline
+    )
+    if (-not $canonicalFrontmatter.Success) {
+        throw 'Canonical SKILL.md has no valid YAML frontmatter block.'
+    }
+    $body = $canonicalSkill.Substring($canonicalFrontmatter.Length).TrimStart("`r", "`n")
+    $body = $body.Replace('assets/workflow-template', 'templates/workflow-template')
+    $heading = [regex]::Match($body, '\A# Multiple Agent Workflow Configuration\r?\n')
+    if (-not $heading.Success) {
+        throw 'Canonical SKILL.md has no expected title heading.'
+    }
+    $adapter = [IO.File]::ReadAllText(
+        (Join-Path $RepositoryRoot 'packaging\workbuddy\skill-adapter.md')
+    ).Trim()
+    $body = $body.Substring(0, $heading.Length) + "`r`n" + $adapter + "`r`n`r`n" +
+        $body.Substring($heading.Length)
+    $metadata = Expand-DistributionTemplate `
+        (Join-Path $RepositoryRoot 'packaging\workbuddy\metadata.yaml') @{
+            PACKAGE_VERSION = $Version
+        }
+    [IO.File]::WriteAllText(
+        (Join-Path $skillRoot 'SKILL.md'),
+        $metadata + "`r`n" + $body,
+        $script:MawUtf8NoBom
+    )
+
+    $package = Join-Path $DistributionRoot "Y_MultipleAgentWorkflow-$Version-workbuddy.zip"
+    Compress-Archive -Path $skillRoot -DestinationPath $package `
+        -CompressionLevel Optimal -Force
+    $package
+}
+
 try {
     $root = Get-MawRepositoryRoot
     $manifestPath = Join-Path $root 'distribution-manifest.json'
@@ -100,8 +162,18 @@ try {
     Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination $offline
     Copy-Item -LiteralPath (Join-Path $root 'README.md') -Destination $offline
     Copy-Item -LiteralPath (Join-Path $root 'README.cn.md') -Destination $offline
+    Copy-Item -LiteralPath (Join-Path $root 'THIRD_PARTY_NOTICES.md') -Destination $offline
+    Copy-Item -LiteralPath (Join-Path $root 'requirements-dev.txt') -Destination $offline
+    Copy-Item -LiteralPath (Join-Path $root 'docs') -Destination (Join-Path $offline 'docs') -Recurse
     $offlineZip = Join-Path $distRoot "Y_MultipleAgentWorkflow-$version-offline.zip"
     Compress-Archive -Path (Join-Path $offline '*') -DestinationPath $offlineZip -CompressionLevel Optimal
+
+    $workbuddyZip = Build-WorkBuddyPackage `
+        -RepositoryRoot $root `
+        -SkillSource $skillSource `
+        -StageRoot $clientStageRoot `
+        -DistributionRoot $distRoot `
+        -Version ([string]$manifest.skillVersion)
 
     $repository = if ([string]::IsNullOrWhiteSpace($RepositoryUrl)) {
         [string]$manifest.repository

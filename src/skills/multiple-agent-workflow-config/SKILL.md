@@ -90,7 +90,8 @@ out-of-scope findings to one line.
 - Do not automatically truncate project `DeveloperLog.md` history. Remove an
   entry only after the user explicitly confirms it is redundant or outdated.
 - Never infer another project's build/publish/run commands from the bundled example.
-- The bundled WorkingAgent implementation targets Windows with PowerShell 7.
+- The bundled scripts target Windows and support Windows PowerShell 5.1 and
+  PowerShell 7 or later. Windows PowerShell 5.1 is sufficient.
 - Do not create duplicate Skill copies across clients. Determine one canonical Skill
   directory and use directory Junctions only after checking existing links.
 

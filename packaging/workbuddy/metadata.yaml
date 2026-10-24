@@ -1,0 +1,10 @@
+---
+name: "multiple-agent-workflow-config"
+display_name: "多智能体工作流配置"
+display_name_en: "Multi-Agent Workflow Configuration"
+description: "Configure and maintain reusable multi-agent workflows for Windows projects."
+description_zh: "为 Windows 项目配置并维护可复用的多智能体工作流。"
+description_en: "Configure and maintain reusable multi-agent workflows for Windows projects."
+version: "{{PACKAGE_VERSION}}"
+author: "YONAGI"
+---

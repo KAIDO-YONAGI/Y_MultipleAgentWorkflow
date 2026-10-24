@@ -44,7 +44,7 @@ try {
             if ([string]::IsNullOrWhiteSpace($Repository)) {
                 throw 'Repository is required when updating copied installations without PackagePath.'
             }
-            if ($PSCmdlet.ShouldProcess($Repository, 'Download latest private release with gh')) {
+            if ($PSCmdlet.ShouldProcess($Repository, 'Download latest GitHub release with gh')) {
                 $temporaryRoot = Join-Path ([IO.Path]::GetTempPath()) "maw-update-$([Guid]::NewGuid().ToString('N'))"
                 [void][IO.Directory]::CreateDirectory($temporaryRoot)
                 & gh release download --repo $Repository --pattern '*-offline.zip' --pattern 'SHA256SUMS' --dir $temporaryRoot --clobber
