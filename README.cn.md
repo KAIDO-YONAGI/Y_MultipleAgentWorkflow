@@ -1,7 +1,9 @@
 # Y_MultipleAgentWorkflow 中文主手册
 
-本仓库用于分发 `multiple-agent-workflow-config` Skill。它帮助 Codex、Claude、
-ZCode 和 WorkBuddy 为真实项目配置同一套多 Agent 路由、项目知识文档和可选并发租约。
+本仓库用于分发 `multiple-agent-workflow-config` Skill。它帮助项目把经验整理成
+可路由、可维护、可跨会话复用的工作知识；多个 Agent 共用工作区时，用租约协调
+并发修改。租约是协作协议，不会拦截未参与的 Agent 或用户手动改文件。Skill 可供
+Codex、Claude、ZCode 和 WorkBuddy 使用。
 
 英文摘要见 `README.md`。本文件是项目构成、使用、迁移、开发和发布的中文
 主手册。
@@ -108,13 +110,16 @@ WorkBuddy 包从同一源码生成，并按平台要求加入双语元数据、�
 发布构建生成 Codex、Claude、ZCode 客户端 ZIP、WorkBuddy Skill ZIP 和离线包。
 项目采用 MIT License 开源，许可条款见根目录 `LICENSE`；所有分发 ZIP 均携带
 该许可证。WorkBuddy 包只有一个顶层技能目录，含 `SKILL.md`、references、
-scripts、`templates/` 和 `LICENSE`，不含其他客户端专用文件。
+scripts、`templates/workflow-template.zip`、版本清单和 `LICENSE`，不含其他
+客户端专用文件。平台上传解析器拒绝 Skill 根目录下超过两段的文件路径，因此
+模板内部目录保存在 ZIP 中；初始化器和升级器会校验路径并临时解压，完成后清理。
 
 WorkBuddy 的脚本面向 Windows，运行时需要 Windows PowerShell 5.1（Windows 自带）
 或 PowerShell 7；PowerShell 7 不是额外必装项。WorkBuddy 的执行工具使用 Bash，
 因此须由 Bash 在同一 Windows 环境调用 `powershell.exe`；若其执行环境无法访问
 Windows 工作区或启动该程序，应由用户在本机运行脚本。Codex、Claude、ZCode
-本地安装器不管理 WorkBuddy，WorkBuddy ZIP 需通过其自身流程导入。
+本地安装器不管理 WorkBuddy，WorkBuddy ZIP 需通过其自身流程导入。导入包与市场
+上架是两件事；本项目仅面向免费开源分发，不会因市场资格限制改为付费发布。
 
 运行时没有第三方模块依赖。Python 3 与 PyYAML 仅用于开发/CI 元数据校验；
 Git 用于克隆仓库，Git 与 GitHub CLI (`gh`) 分别仅在对应的显式更新路径需要。

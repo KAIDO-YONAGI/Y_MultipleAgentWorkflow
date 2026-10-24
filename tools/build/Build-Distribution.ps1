@@ -59,10 +59,11 @@ function Build-WorkBuddyPackage {
         [string]$SkillSource,
         [string]$StageRoot,
         [string]$DistributionRoot,
-        [string]$Version
+        [string]$Version,
+        [Parameter(Mandatory)]$Manifest
     )
 
-    $skillName = 'multiple-agent-workflow-config'
+    $skillName = [string]$Manifest.skillName
     $packageRoot = Join-Path $StageRoot 'workbuddy'
     Reset-OwnedDirectory $RepositoryRoot $packageRoot
     $skillRoot = Join-Path $packageRoot $skillName
@@ -74,10 +75,17 @@ function Build-WorkBuddyPackage {
     }
     $templatesRoot = Join-Path $skillRoot 'templates'
     [void][IO.Directory]::CreateDirectory($templatesRoot)
-    Copy-Item -LiteralPath (Join-Path $SkillSource 'assets\workflow-template') `
-        -Destination (Join-Path $templatesRoot 'workflow-template') -Recurse
+    [void](Add-Type -AssemblyName System.IO.Compression.FileSystem)
+    [IO.Compression.ZipFile]::CreateFromDirectory(
+        (Join-Path $SkillSource 'assets\workflow-template'),
+        (Join-Path $templatesRoot 'workflow-template.zip'),
+        [IO.Compression.CompressionLevel]::Optimal,
+        $false
+    )
     Copy-Item -LiteralPath (Join-Path $RepositoryRoot 'LICENSE') `
         -Destination (Join-Path $skillRoot 'LICENSE')
+    Copy-Item -LiteralPath (Join-Path $RepositoryRoot 'distribution-manifest.json') `
+        -Destination (Join-Path $skillRoot 'distribution-manifest.json')
 
     $canonicalSkill = [IO.File]::ReadAllText((Join-Path $SkillSource 'SKILL.md'))
     $canonicalFrontmatter = [regex]::Match(
@@ -89,7 +97,10 @@ function Build-WorkBuddyPackage {
         throw 'Canonical SKILL.md has no valid YAML frontmatter block.'
     }
     $body = $canonicalSkill.Substring($canonicalFrontmatter.Length).TrimStart("`r", "`n")
-    $body = $body.Replace('assets/workflow-template', 'templates/workflow-template')
+    $body = $body.Replace(
+        'The reusable scaffold is in [assets/workflow-template](assets/workflow-template).',
+        'The reusable scaffold is bundled in [templates/workflow-template.zip](templates/workflow-template.zip). The initializer and updater extract it to a temporary directory when needed.'
+    )
     $heading = [regex]::Match($body, '\A# Multiple Agent Workflow Configuration\r?\n')
     if (-not $heading.Success) {
         throw 'Canonical SKILL.md has no expected title heading.'
@@ -173,7 +184,8 @@ try {
         -SkillSource $skillSource `
         -StageRoot $clientStageRoot `
         -DistributionRoot $distRoot `
-        -Version ([string]$manifest.skillVersion)
+        -Version ([string]$manifest.skillVersion) `
+        -Manifest $manifest
 
     $repository = if ([string]::IsNullOrWhiteSpace($RepositoryUrl)) {
         [string]$manifest.repository

@@ -2,9 +2,9 @@
 name: "multiple-agent-workflow-config"
 display_name: "多智能体工作流配置"
 display_name_en: "Multi-Agent Workflow Configuration"
-description: "Configure and maintain reusable multi-agent workflows for Windows projects."
-description_zh: "为 Windows 项目配置并维护可复用的多智能体工作流。"
-description_en: "Configure and maintain reusable multi-agent workflows for Windows projects."
+description: "Turn project experience into routable knowledge reusable across sessions, and coordinate concurrent edits with leases when agents share a workspace."
+description_zh: "帮助项目把经验整理成可路由、可维护、可跨会话复用的工作知识；多个 Agent 共用工作区时，用租约协调并发修改。"
+description_en: "Turn project experience into routable, maintainable knowledge reusable across sessions; coordinate concurrent edits with leases when agents share a workspace."
 version: "{{PACKAGE_VERSION}}"
 author: "YONAGI"
 ---

@@ -16,14 +16,10 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-
+. (Join-Path $PSScriptRoot 'WorkflowTemplate.ps1')
 $script:Utf8NoBom = [Text.UTF8Encoding]::new($false)
-$script:AssetRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\assets\workflow-template'))
-if (-not [IO.Directory]::Exists($script:AssetRoot)) {
-    $script:AssetRoot = [IO.Path]::GetFullPath(
-        (Join-Path $PSScriptRoot '..\templates\workflow-template')
-    )
-}
+$script:AssetRoot = $null
+$script:TemplateExtractionRoot = $null
 $script:ConfigurationMethod = [IO.Path]::GetFullPath(
     (Join-Path $PSScriptRoot '..\references\configuration-method.md')
 )
@@ -222,6 +218,10 @@ Record Active capabilities, Proposal documents, and user-confirmed constraints h
 }
 
 try {
+    $template = Resolve-WorkflowTemplate $PSScriptRoot
+    $script:AssetRoot = [string]$template.AssetRoot
+    $script:TemplateExtractionRoot = [string]$template.TemporaryRoot
+
     $project = [IO.Path]::GetFullPath($ProjectRoot)
     if (-not [IO.Directory]::Exists($project)) {
         throw "ProjectRoot does not exist: '$project'."
@@ -369,4 +369,10 @@ catch {
         errors = @($_.Exception.Message)
     } | ConvertTo-Json -Depth 6
     exit 1
+}
+finally {
+    if (-not [string]::IsNullOrWhiteSpace($script:TemplateExtractionRoot) -and
+        [IO.Directory]::Exists($script:TemplateExtractionRoot)) {
+        Remove-Item -LiteralPath $script:TemplateExtractionRoot -Recurse -Force
+    }
 }

@@ -33,7 +33,11 @@ Each release contains:
   `LICENSE`.
 - The WorkBuddy ZIP contains one top-level
   `multiple-agent-workflow-config/` Skill directory, bilingual metadata, references,
-  scripts, a `templates/workflow-template/` copy, and `LICENSE`. It excludes
+  scripts, `templates/workflow-template.zip`, `distribution-manifest.json`, and
+  `LICENSE`. The platform upload parser rejects files nested more than two path
+  segments below the Skill root, so the full template tree is kept in the embedded
+  ZIP. The packaged initializer and updater validate archive paths, extract to a
+  temporary directory, and remove it when finished. The package excludes
   `agents/openai.yaml` and the source-only `assets/` layout.
 - The offline ZIP contains `tools/`, `skills/`, `distribution-manifest.json`,
   `VERSION`, `LICENSE`, both READMEs, `docs/`, `THIRD_PARTY_NOTICES.md`, and
@@ -59,11 +63,14 @@ GitHub CLI (`gh`) are only needed for their respective explicit update paths. Th
 local installer does not install WorkBuddy; import its ZIP through WorkBuddy's own
 Skill workflow.
 
-The MIT license permits free redistribution subject to its terms, but it does not
-establish that a marketplace listing can be published for free. WorkBuddy's
-monetization documentation describes both a free option and a current paid-only
-limitation. Confirm the live publishing workflow before making a free-listing
-claim; the locally built ZIP is not uploaded by this repository's build process.
+The MIT license permits redistribution subject to its terms, but it does not
+guarantee marketplace approval. WorkBuddy's monetization page shows Free/Paid
+options in the publishing flow while its FAQ says only paid Skills and experts are
+currently supported. This is internally inconsistent documentation; verify the
+current account workflow before claiming that a free marketplace listing is
+available. The locally built ZIP is not uploaded by this repository's build process.
+This project is intended for free, open-source distribution; do not submit it as a
+paid asset to work around marketplace eligibility.
 
 ## Source of truth
 

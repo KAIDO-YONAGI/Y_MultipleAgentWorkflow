@@ -1,7 +1,10 @@
 # Y_MultipleAgentWorkflow
 
-Versioned distribution source for the reusable multi-agent workflow configuration
-Skill and its project workflow template.
+Versioned distribution source for a Skill that turns project experience into
+routable, maintainable work knowledge reusable across sessions. When multiple
+Agents share a workspace, leases coordinate concurrent modifications. Leases are
+cooperative protocol, not filesystem locks; they cannot prevent manual edits or
+changes by non-participating Agents.
 
 Chinese primary manual: [`README.cn.md`](README.cn.md)
 
@@ -75,7 +78,11 @@ The release build provides Codex, Claude, and ZCode client ZIPs, a WorkBuddy Ski
 ZIP, and an offline package. WorkBuddy imports its ZIP through its Skill workflow;
 the local installer targets Codex, Claude, and ZCode only. The WorkBuddy adapter and
 bundled scripts are Windows-only. Windows PowerShell 5.1 is sufficient; PowerShell 7
-or later is also supported.
+or later is also supported. The WorkBuddy ZIP keeps the project template in a nested
+ZIP because its upload parser rejects Skill files more than two path segments below
+the Skill root; the initializer and updater validate and extract that archive in a
+temporary directory. ZIP import and marketplace listing are separate; this project
+is intended for free, open-source distribution, not a paid listing.
 
 There are no third-party runtime modules. Python 3 and PyYAML are needed only for
 development metadata validation. Git is used when cloning the repository; Git and

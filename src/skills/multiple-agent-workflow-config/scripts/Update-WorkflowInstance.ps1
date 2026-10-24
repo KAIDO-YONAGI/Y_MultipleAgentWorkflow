@@ -11,6 +11,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $utf8NoBom = [Text.UTF8Encoding]::new($false)
+. (Join-Path $PSScriptRoot 'WorkflowTemplate.ps1')
+$templateExtractionRoot = $null
 
 function Find-DistributionRoot {
     param([string]$StartPath)
@@ -36,10 +38,9 @@ try {
     $distribution = [IO.File]::ReadAllText(
         (Join-Path $distributionRoot 'distribution-manifest.json')
     ) | ConvertFrom-Json
-    $assetRoot = Join-Path $PSScriptRoot '..\assets\workflow-template'
-    if (-not [IO.Directory]::Exists($assetRoot)) {
-        $assetRoot = Join-Path $PSScriptRoot '..\templates\workflow-template'
-    }
+    $template = Resolve-WorkflowTemplate $PSScriptRoot
+    $assetRoot = [string]$template.AssetRoot
+    $templateExtractionRoot = [string]$template.TemporaryRoot
     $instance = [IO.File]::ReadAllText($instancePath) | ConvertFrom-Json
     $results = [Collections.Generic.List[object]]::new()
 
@@ -127,4 +128,10 @@ catch {
         errors = @($_.Exception.Message)
     } | ConvertTo-Json -Depth 6
     exit 1
+}
+finally {
+    if (-not [string]::IsNullOrWhiteSpace($templateExtractionRoot) -and
+        [IO.Directory]::Exists($templateExtractionRoot)) {
+        Remove-Item -LiteralPath $templateExtractionRoot -Recurse -Force
+    }
 }

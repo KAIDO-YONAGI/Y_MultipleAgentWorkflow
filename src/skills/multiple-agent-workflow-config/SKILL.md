@@ -1,12 +1,17 @@
 ---
 name: multiple-agent-workflow-config
-description: Configure or migrate a project to a reusable multi-agent and multi-model workflow with hierarchical routing, maintained project guides, and WorkingAgent concurrency leases. Use when users ask to design, initialize, generalize, validate, or repair a Y_MultipleAgentWorkflow-style setup. Do not modify model entry files or migrate existing authoritative documents before explicit user confirmation.
+description: Use when a project needs to turn experience into routable, maintainable work knowledge reusable across sessions, or coordinate concurrent modifications with leases when multiple Agents share a workspace.
 ---
 
 # Multiple Agent Workflow Configuration
 
-Build a project-specific workflow from project evidence. The Skill owns the generic
-method; each project's Router and Guide/Design files own project-specific behavior.
+This Skill helps a project turn experience into routable, maintainable work knowledge
+that can be reused across sessions. When multiple Agents share a workspace, leases
+coordinate concurrent modifications. Leases are a cooperative protocol, not a
+filesystem lock; manual edits and nonparticipating Agents are outside its enforcement.
+
+The Skill owns the generic method; each project's Router and Guide/Design files own
+project-specific behavior.
 
 ## Required sequence
 
