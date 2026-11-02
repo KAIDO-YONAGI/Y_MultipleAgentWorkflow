@@ -1,5 +1,22 @@
 # WorkingAgent Concurrency Guide
 
+## Maintenance rules
+
+Update this guide when the lease protocol or confirmed shared resources change.
+Verify behavior against the scripts and record evidence in the Workflow
+DeveloperLog; keep the local contents links current. Shared maintenance counting
+rules are in the [Workflow Guide](Workflow_Guide.md#maintenance-rules).
+
+## Contents
+
+- [Lease timing](#lease-timing)
+- [Native Codex coordination](#native-codex-coordination)
+- [Conflict rules](#conflict-rules)
+- [Heartbeat and stale markers](#heartbeat-and-stale-markers)
+- [Completion](#completion)
+
+Read these contents first, then only the sections relevant to the task.
+
 ## Lease timing
 
 Light read-only discovery may occur first. Acquire a lease before detailed analysis,

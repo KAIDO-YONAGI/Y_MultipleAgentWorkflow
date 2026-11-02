@@ -194,6 +194,15 @@ Status: ``Active``
 Maintenance count: ``0/5``  
 Last updated: ``$Date``
 
+## Maintenance rules
+
+Update this Router when business routes, authorities, or capability boundaries
+change. Count only successful tasks that materially affect this business; failures,
+cancellation, read-only analysis, leases, and pure documentation maintenance do not
+count. At 5/5, review actual implementation and task evidence, update authorities
+or record reviewed-no-change, then reset. Store evidence in this business log and
+maintain its detailed document index here.
+
 ## Task routing
 
 | Trigger | Authority |
@@ -261,18 +270,11 @@ No project-specific build, publish, run, deployment, process, or environment
 procedure is configured. This workflow does not impose one.
 "@
     }
-    $projectValidationIndex = if ($ProjectValidationMode -eq 'Guide') {
-        '| `WF-PROJECT-VALIDATION` | `Workflow\Project_Validation_Guide.md` | PendingConfiguration |'
-    }
-    else {
-        ''
-    }
     $tokens = @{
         PROJECT_NAME = $projectName
         CATEGORY_ROWS = $categoryRows
         PROJECT_VALIDATION_MODE = $ProjectValidationMode
         PROJECT_VALIDATION_SECTION = $projectValidationSection
-        PROJECT_VALIDATION_INDEX = $projectValidationIndex
         DATE = $date
     }
 
@@ -315,8 +317,14 @@ procedure is configured. This workflow does not impose one.
         Install-Text (Join-Path $categoryPath 'DeveloperLog.md') @"
 # $category Developer Log
 
-Record completed task evidence, affected files/resources, validation, conclusions, and
-maintenance count changes here.
+## Maintenance rules
+
+Append dated task evidence, affected files/resources, validation, conclusions, and
+maintenance count changes; keep current conclusions in the relevant Guide. Read
+the Guide first. For recent history, locate only relevant entries from the last
+one or two days, never the entire log. Read older entries only for a targeted
+historical investigation. Preserve stored history unless the user explicitly
+approves removing specific entries.
 "@
     }
 

@@ -1,5 +1,11 @@
 # WorkingAgent Registry
 
+## Maintenance rules
+
+Update this document when registry storage or lease behavior changes, using the
+scripts and the Concurrency Guide as evidence. Keep temporary lease markers out
+of version control and record protocol changes in the Workflow DeveloperLog.
+
 This directory stores temporary JSON lease markers named `<AgentName>_<Hash>.txt`.
 Only this README and `.gitignore` are versioned. Agents must use
 `..\Workflow\Scripts\WorkingAgent.ps1` for registry operations.

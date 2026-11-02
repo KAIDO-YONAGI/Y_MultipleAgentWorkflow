@@ -5,6 +5,23 @@ description: Use when a project needs to turn experience into routable, maintain
 
 # Multiple Agent Workflow Configuration
 
+## Maintenance and context reading
+
+- Put maintenance rules immediately after the title and metadata in every project
+  Router, Guide/Design, DeveloperLog, and Proposal/Reference. State when to update
+  that document and where its evidence belongs; link shared rules instead of
+  copying them in full.
+- Guide documents must place a local table of contents after those rules, with
+  links to their section headings. Read the contents first, then only the relevant
+  sections; keep the links current when headings change.
+- Prefer the relevant Guide for current project state. When recent task history is
+  needed, locate and read only relevant log entries from the last one or two days.
+  Never load an entire DeveloperLog into context. If that window has no relevant
+  entry, use the Guide; read older entries only for task-specific historical
+  investigation, locating them by date, heading, or task terms first.
+- Reading limits do not authorize trimming stored logs. Preserve history unless
+  the user explicitly approves removing specific redundant or outdated entries.
+
 This Skill helps a project turn experience into routable, maintainable work knowledge
 that can be reused across sessions. When multiple Agents share a workspace, leases
 coordinate concurrent modifications. Leases are a cooperative protocol, not a
@@ -74,6 +91,15 @@ Initialization and maintenance are separate phases. Read
 exists and needs single-sourcing, entry thinning, section reordering, contradiction
 cleanup, or reference verification. Ask before removing any rule or document, and keep
 out-of-scope findings to one line.
+
+## Root Router structure
+
+Use the seven-section root Router structure in
+[references/doc-maintenance.md](references/doc-maintenance.md#4-章节顺序).
+Keep task routing, business Router navigation, and a few current implementation
+entry points at the root. Do not create or restore a full document index there;
+each business Router owns its detailed document index. This applies to both
+initialization and maintenance.
 
 ## Classification constraints
 

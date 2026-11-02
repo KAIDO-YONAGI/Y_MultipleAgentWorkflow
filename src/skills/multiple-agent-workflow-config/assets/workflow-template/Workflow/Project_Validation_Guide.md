@@ -4,6 +4,20 @@ Document ID: `WF-PROJECT-VALIDATION`
 Status: `PendingConfiguration`  
 Last updated: `{{DATE}}`
 
+## Maintenance rules
+
+Update this guide when user-confirmed validation triggers, commands, resources,
+or success criteria change; record evidence in the Workflow DeveloperLog. Keep the
+status pending until project commands are confirmed, and update contents links
+when headings change. Shared maintenance counting rules are in
+the [Workflow Guide](Workflow_Guide.md#maintenance-rules).
+
+## Contents
+
+- [Scope](#scope)
+
+Read these contents first, then only the sections relevant to the task.
+
 ## Scope
 
 This optional document records only validation commands and state-changing checks

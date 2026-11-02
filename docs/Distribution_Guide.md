@@ -1,5 +1,21 @@
 # Distribution Guide
 
+## Maintenance rules
+
+Update this guide when release commands, asset composition, or packaging boundaries
+change. Verify against the repository tooling and keep the local contents links
+current. Record release-specific changes in the matching GitHub Release notes.
+
+## Contents
+
+- [Build and verification](#build-and-verification)
+- [Release assets](#release-assets)
+- [Package composition](#package-composition)
+- [Marketplace metadata](#marketplace-metadata)
+- [Source of truth](#source-of-truth)
+
+Read these contents first, then only the sections relevant to the task.
+
 Release process and asset composition for this repository. Installation and upgrade
 boundaries are owned by
 `src/skills/multiple-agent-workflow-config/references/distribution.md`.
